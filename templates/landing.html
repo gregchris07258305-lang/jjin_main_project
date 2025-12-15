@@ -117,34 +117,38 @@
             <p class="text-sm md:text-base text-gray-500" id="header-desc">지도를 클릭하여 지역별 뉴스를 확인하세요</p>
         </header>
         <main id="svg-container" class="w-full max-w-5xl flex items-center justify-center flex-1">
-        </main>
+            </main>
     </div>
 
     <script>
         // =========================================================================
-        // [1] 데이터 설정
+        // [1] 데이터 설정 (보내주신 최신 지역명 반영)
         // =========================================================================
         const REGION_DATA = {
-            // ★ 전국 지도 설정 (Key가 곧 G ID입니다)
+            // ★ 전국 지도 설정 (Key가 곧 G ID)
             'national': {
                 mapPath: '/static/images/map.svg',
                 title: '전국 소식',
                 desc: '지도를 클릭하여 지역별 뉴스를 확인하세요',
                 db: {
+                    // Case 2: 상세 지도로 넘어갈 지역들
                     'metropolitan': { name: '서울/경기/인천', count: 4250 },
-                    'gangwon': { name: '강원도', count: 231 },
-                    'chungbug': { name: '충청북도', count: 412 },
                     'chungnam': { name: '충남/대전/세종', count: 589 },
-                    'jeonbug': { name: '전라북도', count: 620 },
                     'jeonnam': { name: '전남/광주', count: 340 },
                     'gyeongbug': { name: '경북/대구', count: 781 },
                     'gyeongnam': { name: '경남/부산/울산', count: 890 },
+                    
+                    // Case 1: 바로 main.html로 연결될 지역들
+                    'gangwon': { name: '강원도', count: 231 },
+                    'chungbug': { name: '충청북도', count: 412 },
+                    'jeonbug': { name: '전라북도', count: 620 },
                     'jeju': { name: '제주특별자치도', count: 156 }
                 },
+                // 툴팁 방향 설정 (왼쪽 지역)
                 leftSideIds: ['metropolitan', 'chungnam', 'jeonbug', 'jeonnam', 'jeju']
             },
 
-            // ★ 상세 지도 설정 (Key가 곧 Path ID입니다)
+            // ★ 상세 지도 설정 (Key가 곧 Path ID, 파일이 있는 지역만 정의)
             'metropolitan': {
                 mapPath: '/static/images/total_metropolitan.svg',
                 title: '수도권 상세',
@@ -202,7 +206,7 @@
         let tooltipTimeline = null;
 
         // =========================================================================
-        // [2] 핵심 로직: 모드에 따라 타겟팅을 다르게 함
+        // [2] 핵심 로직
         // =========================================================================
         function initMapEvents() {
             const svgElement = document.querySelector('#svg-container svg');
@@ -215,11 +219,9 @@
             const tCountSpan = tooltip.querySelector('.tooltip-count span');
             const overlay = document.getElementById('transition-overlay');
 
-            // 활성 ID 목록
             const activeIds = Object.keys(currentConfig.db);
             console.log(`[Init] Mode: ${currentRegionKey}, Looking for:`, activeIds);
 
-            // 전체 요소 탐색
             const allElements = svgElement.querySelectorAll('g, path');
 
             allElements.forEach(element => {
@@ -228,34 +230,29 @@
 
                 if (!regionId) return;
 
-                // 1. 전국 지도 모드일 때 (map.svg)
-                // - 구조: G(ID=metropolitan) > Path(ID=metropolitan_st)
-                // - 목표: G ID만 인식해야 함. 내부 Path ID(_st)는 무시하되 비활성화시키면 안 됨.
+                // [전국 모드 필터링] _st ID 무시
                 if (!isDetailMode) {
-                    if (regionId.endsWith('_st')) return; // _st 붙은 path는 로직 건너뜀 (부모 G가 알아서 함)
+                    if (regionId.endsWith('_st')) return; 
                 }
 
-                // 2. 상세 지도 모드일 때 (total_*.svg)
-                // - 구조: G(ID=total_..) > Path(ID=detail_..)
-                // - 목표: Path ID만 인식해야 함. 부모 G ID는 무시.
+                // [상세 모드 필터링] total_, .svg 무시
                 if (isDetailMode) {
-                    if (regionId.startsWith('total_') || regionId.includes('.svg')) return; // 부모 그룹 건너뜀
+                    if (regionId.startsWith('total_') || regionId.includes('.svg')) return; 
                 }
 
-                // 3. 랜드마크
+                // [랜드마크]
                 if (regionId.toLowerCase().includes('lm')) {
                     element.classList.add('landmark-piece');
                     return; 
                 }
 
-                // 4. 매칭 검사
+                // [매칭 성공 시 이벤트 바인딩]
                 if (activeIds.includes(regionId)) {
-                    // ★ 매칭됨! 이벤트 연결
-                    console.log(`✅ Matched: ${regionId} (<${element.tagName}>)`);
                     element.classList.add('puzzle-piece');
 
+                    // Hover Event
                     element.addEventListener('mouseenter', function() {
-                        // G태그면 자식 path들 때문에 z-index 이슈가 덜하지만, Path 태그면 순서 변경 필요
+                        // z-index handling
                         if (this.tagName.toLowerCase() === 'path' || this.tagName.toLowerCase() === 'g') {
                              this.parentNode.appendChild(this); 
                         }
@@ -267,7 +264,6 @@
                         const rect = element.getBoundingClientRect();
                         tooltip.style.display = 'flex';
                         
-                        // 툴팁 위치
                         let isLeft = false;
                         if (!isDetailMode) {
                             isLeft = (currentConfig.leftSideIds || []).includes(regionId);
@@ -301,29 +297,46 @@
                         tooltip.style.display = 'none';
                     });
 
+                    // [Click Event - 핵심 로직 분기]
                     element.addEventListener('click', (e) => {
                         e.stopPropagation();
                         tooltip.style.display = 'none';
 
-                        if (!isDetailMode) {
-                            // 전국 -> 상세
+                        // 1. 공통 트랜지션 효과 (줌인 & 화이트아웃)
+                        const runTransition = (callback) => {
                             gsap.timeline()
                                 .to(element, { scale: 1.2, duration: 0.2, ease: "back.in(2)", zIndex: 100 }) 
                                 .to("#svg-container", { scale: 5, opacity: 0, duration: 0.8, ease: "power4.in" })
                                 .to(overlay, { opacity: 1, duration: 0.5 }, "<0.3")
-                                .to({}, { onComplete: () => { 
-                                    window.location.search = `?region=${regionId}`; 
-                                } });
+                                .to({}, { onComplete: callback });
+                        };
+
+                        if (!isDetailMode) {
+                            // [전국 지도 모드]
+                            // REGION_DATA에 해당 regionId가 Key로 존재하면 상세 지도가 있는 곳 (Case 2)
+                            if (REGION_DATA[regionId]) {
+                                // Case 2: 상세 지도로 이동 (페이지 리로드 ?region=...)
+                                runTransition(() => {
+                                    window.location.search = `?region=${regionId}`;
+                                });
+                            } else {
+                                // Case 1: 상세 지도가 없는 곳 (강원, 제주, 전북, 충북)
+                                // -> 바로 main.html로 이동하며 쿼리 파라미터 전달
+                                runTransition(() => {
+                                    window.location.href = `main.html?region=${regionId}`;
+                                });
+                            }
                         } else {
-                            // 상세 -> 뉴스
-                            alert(`${currentConfig.db[regionId].name} 상세 뉴스 (준비중)`);
+                            // [상세 지도 모드]
+                            // Case 2의 2단계: 상세 지역(예: detail_daegu) 클릭 시 main.html로 이동
+                            runTransition(() => {
+                                window.location.href = `main.html?region=${regionId}`;
+                            });
                         }
                     });
 
                 } else {
-                    // 5. 매칭 안 됨 -> 비활성 처리
-                    // 단, 전국 지도에서 내부 path(_st)는 이미 위에서 return 했으므로 여기까지 안 옴. 
-                    // 즉, 엄한 놈들만 여기서 걸러짐.
+                    // 매칭 실패 시 비활성 처리
                     element.classList.add('region-disabled');
                 }
             });
@@ -341,7 +354,7 @@
             headerTitle.innerText = `Sseuk-Sseuk : ${currentConfig.title}`;
             headerDesc.innerText = currentConfig.desc;
 
-            // UI 분기
+            // UI 분기 처리
             if (isDetailMode) {
                 introGate.classList.remove('flex');
                 introGate.classList.add('hidden');
