@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>마이페이지 | 청년 정책 플랫폼</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-orange': '#F48245',
+                        'primary-teal': '#4A9EA8',
+                        'primary-beige': '#D9B36C',
+                        'primary-red': '#FF5A5F',
+                        'bg-light': '#FFFFFF',
+                        'text-main': '#000000',
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="font-sans antialiased">
+    
+    <nav class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/70 backdrop-blur-md transition-all duration-300">
+    <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
+        
+        <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
+            <img src="/static/images/logo.svg" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
+        </a>
+
+        <ul class="flex gap-2 md:gap-3">
+            <li>
+                <a href="/main.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                    Home
+                </a>
+            </li>
+            <li>
+                <a href="/all.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3d8b94] transition-all">
+                    All Policies
+                </a>
+            </li>
+            <li>
+                <a href="/mypage.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-orange shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e06d2e] transition-all">
+                    My Page
+                </a>
+            </li>
+            <li>
+                <a href="/about.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-beige shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#c49f5b] transition-all">
+                    About
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    <main class="body-container mypage-container max-w-[1200px] mx-auto px-5 py-10">
+        
+        <section class="w-full mb-12 pt-4 flex flex-col md:flex-row items-center justify-between gap-10">
+            
+            <div class="flex-1 text-center md:text-left header-text">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-primary-orange text-xs font-bold mb-6">
+                    <span>My Analytics</span>
+                    <i class="fa-solid fa-star text-[10px]"></i>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+                    나의 정책 활동<br>
+                    <span class="relative inline-block z-10">
+                        한눈에 모아보기 📊
+                        <span class="absolute bottom-1 left-0 w-full h-3 bg-orange-100 -z-10 rounded-sm"></span>
+                    </span>
+                </h1>
+                
+                <p class="text-gray-500 text-lg leading-relaxed">
+                    내가 찜한 정책과 관심사 데이터를 확인해보세요.<br>
+                    나만의 맞춤형 정책 라이프가 시작됩니다.
+                </p>
+            </div>
+
+            <div class="flex-1 flex justify-center md:justify-end relative header-image">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-50 rounded-full blur-3xl -z-10 opacity-60"></div>
+                <img src="/static/images/header2_image.png" 
+                     onerror="this.src='https://placehold.co/500x400/transparent/orange?text=Main+Banner'"
+                     class="w-full max-w-[450px] object-contain drop-shadow-sm hover:scale-105 transition-transform duration-500" 
+                     alt="Header Banner">
+            </div>
+        </section>
+
+        <div class="w-full h-[1px] bg-gray-100 mb-12"></div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-[minmax(180px,auto)]">
+
+            <div class="bg-aurora group relative col-span-1 h-[320px] rounded-[40px] overflow-hidden shadow-md cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl border border-white/10">
+                <div class="relative z-10 h-full flex flex-col p-8 text-white">
+                    <h2 class="text-3xl font-bold leading-tight mb-2 drop-shadow-md">나의 정책<br><span class="text-green-300">MBTI는?</span></h2>
+                    <p class="text-white/80 text-sm font-medium mt-2">내 성향 분석하고<br>딱 맞는 지원받기</p>
+                    <div class="mt-auto flex items-center gap-2 text-white/80 text-sm font-bold">
+                        <span>Tap to view</span> <i class="fa-solid fa-arrow-right animate-pulse"></i>
+                    </div>
+                </div>
+                <img src="/static/images/membership_image.png" 
+                     onerror="this.src='https://placehold.co/300x300/transparent/ffffff?text=MBTI'"
+                     class="absolute right-[-40px] bottom-[-30px] w-64 h-64 object-contain transition-transform duration-500 group-hover:scale-110 opacity-90 mix-blend-hard-light"> 
+            </div>
+
+            <div class="col-span-1 h-[320px] rounded-[40px] bg-white p-8 shadow-sm border border-gray-100 flex flex-col justify-center">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-xl text-gray-800">관심 키워드 트렌드 📈</h3>
+                    <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis"></i></button>
+                </div>
+                <div class="w-full h-full flex justify-center items-center">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-span-1 rounded-[30px] bg-white p-8 shadow-sm border border-gray-100 flex items-center justify-between relative overflow-hidden group hover:border-orange-200 transition-colors">
+                <div class="absolute right-0 top-0 w-24 h-full bg-gradient-to-l from-orange-50 to-transparent"></div>
+                <div class="flex items-center gap-6 relative z-10">
+                    <div class="relative">
+                        <img src="https://placehold.co/120x120/F48245/ffffff?text=User" alt="Profile" class="w-24 h-24 rounded-full border-4 border-orange-50 shadow-sm object-cover group-hover:scale-105 transition-transform">
+                        <button class="absolute bottom-0 right-0 bg-gray-900 text-white w-8 h-8 rounded-full shadow-md hover:bg-primary-orange transition-colors flex items-center justify-center">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 mb-1">김청년 님 👋</h2>
+                        <p class="text-gray-500 text-sm mb-3">youth_kim@example.com</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg">#서울시</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg">#취업준비</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-1 grid grid-cols-2 gap-4">
+                <div class="col-span-2 sm:col-span-1 rounded-[30px] bg-[#FDF8F3] p-6 shadow-sm border border-orange-100 flex flex-col justify-center hover:shadow-md transition-shadow">
+                    <p class="text-sm text-primary-orange font-bold mb-1">나의 활동 지수</p>
+                    <p class="text-xl font-bold text-gray-800">상위 15% 🔥</p>
+                    <div class="w-full bg-orange-100 h-2 rounded-full mt-3 overflow-hidden">
+                        <div class="bg-primary-orange h-full rounded-full" style="width: 85%"></div>
+                    </div>
+                </div>
+
+                <div class="col-span-2 sm:col-span-1 bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 flex justify-around items-center group hover:border-orange-200 transition-colors">
+                    <div class="text-center">
+                        <div class="text-gray-300 text-2xl mb-1 transition-colors group-hover:text-primary-red">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <p class="text-xs text-gray-400 font-bold mb-1">찜한 정책</p>
+                        <p class="text-xl font-extrabold text-gray-800">12</p>
+                    </div>
+
+                    <div class="w-[1px] h-12 bg-gray-100"></div>
+
+                    <div class="text-center">
+                        <div class="text-gray-300 text-2xl mb-1 transition-colors group-hover:text-primary-teal">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </div>
+                        <p class="text-xs text-gray-400 font-bold mb-1">신청 완료</p>
+                        <p class="text-xl font-extrabold text-gray-800">3</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-1 md:col-span-2 mt-4">
+                <div class="flex justify-between items-center mb-6 px-2">
+                    <h3 class="font-bold text-2xl">내가 찜한 정책 ❤️</h3>
+                    <a href="#" class="text-sm text-gray-500 hover:text-black font-medium underline decoration-gray-300 underline-offset-4">모두 보기</a>
+                </div>
+                <div id="mypage-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="policy-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-image">
+                <img id="modal-img" src="" alt="Policy Image">
+                <span id="modal-category" class="modal-tag">카테고리</span>
+            </div>
+            <div class="modal-body">
+                <h2 id="modal-title">정책 제목</h2>
+                <p id="modal-desc">정책 상세 내용</p>
+                <p id="modal-date" class="date">마감일</p>
+                <div class="modal-actions">
+                    <button id="modal-close-btn" class="action-btn back-btn">
+                        <i class="fa-solid fa-arrow-left"></i> 되돌아가기
+                    </button>
+                    <button id="modal-heart-btn" class="action-btn heart-btn">
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

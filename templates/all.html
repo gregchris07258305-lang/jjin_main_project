@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체 정책 보기 | 쓱쓱</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-orange': '#F48245',
+                        'primary-teal': '#4A9EA8',
+                        'primary-beige': '#D9B36C'
+                    },
+                    fontFamily: { sans: ['Pretendard', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 font-sans">
+
+    <nav
+        class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/70 backdrop-blur-md transition-all duration-300">
+        <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
+            <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
+                <img src="/static/images/logo.svg"
+                    onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo"
+                    class="h-10 w-auto">
+            </a>
+            <ul class="flex gap-2 md:gap-3">
+                <li><a href="/"
+                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">Home</a>
+                </li>
+                <li><a href="/all.html"
+                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md transition-all">All
+                        Policies</a></li>
+                <li><a href="/mypage.html"
+                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-orange shadow-md hover:bg-[#e06d2e] transition-all">My
+                        Page</a></li>
+                <li><a href="/about.html"
+                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-beige shadow-md hover:bg-[#c49f5b] transition-all">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="max-w-[1200px] mx-auto px-5 py-10">
+        <header class="text-center mb-16">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">정책 카드 컬렉션 ✨</h1>
+            <p class="text-gray-500 text-lg">마우스를 올려보세요! 카드가 입체적으로 반응합니다.</p>
+        </header>
+
+        <div id="card-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-10">
+        </div>
+    </main>
+
+    <script>
+        const policyData = [
+            { id: 1, title: "청년 안심 주택", category: "주거", img: "https://placehold.co/400x500/F48245/white?text=Housing", desc: "역세권 청년 주택 입주자 모집 공고입니다." },
+            { id: 2, title: "취업 사관학교", category: "취업", img: "https://placehold.co/400x300/4A9EA8/white?text=Job", desc: "SW 개발자 데뷔 과정 무료 교육생 모집" },
+            { id: 3, title: "학자금 대출 이자", category: "금융", img: "https://placehold.co/400x400/D9B36C/white?text=Loan", desc: "학자금 대출 이자 전액 지원" },
+            { id: 4, title: "마음 건강 상담소", category: "복지", img: "https://placehold.co/400x600/FF5A5F/white?text=Mind", desc: "전문 심리 상담사와 1:1 무료 상담" },
+            { id: 5, title: "전세 보증금 반환", category: "주거", img: "https://placehold.co/400x350/333/white?text=Rent", desc: "전세 사기 걱정 없는 보증료 지원" },
+            { id: 6, title: "미래 청년 일자리", category: "취업", img: "https://placehold.co/400x450/4A9EA8/white?text=Future", desc: "신산업 분야 기업 매칭 및 인건비 지원" },
+            { id: 7, title: "문화 예술 패스", category: "복지", img: "https://placehold.co/400x250/FF5A5F/white?text=Art", desc: "공연, 전시 관람비 10만원 지원" },
+            { id: 8, title: "청년 대중교통비", category: "금융", img: "https://placehold.co/400x400/D9B36C/white?text=Transport", desc: "대중교통 이용요금 일부 환급" }
+        ];
+
+        function renderCards() {
+            const container = document.getElementById('card-container');
+            container.innerHTML = policyData.map(item => `
+            <div class="perspective-wrap group" style="z-index: 1;">
+                <div class="policy-card is-3d relative bg-white overflow-hidden h-full flex flex-col border border-gray-200">
+                    <div class="card-glare"></div>
+                    
+                    <div class="card-image w-full bg-white flex items-end justify-center shrink-0">
+                        <img src="${item.img}" alt="${item.title}" class="object-contain object-bottom">
+                    </div>
+
+                    <div class="card-content text-left bg-[#F6F6F7] flex-grow flex flex-col justify-between p-5">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-bold text-primary-orange bg-orange-100 px-2 py-0.5 rounded">#${item.category}</span>
+                            </div>
+                            <h3 class="card-title mb-2 line-clamp-1 text-xl font-extrabold text-[#222]">${item.title}</h3>
+                            <p class="card-desc line-clamp-2 text-sm text-[#666] font-medium">${item.desc}</p>
+                        </div>
+                        <div class="card-date flex justify-between items-center mt-3 text-xs text-[#888]">
+                            <span>2025.12.31 마감</span>
+                            <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-primary-teal transition-colors"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+            init3DEffect();
+        }
+
+        function init3DEffect() {
+            const wrappers = document.querySelectorAll('.perspective-wrap');
+
+            wrappers.forEach(wrapper => {
+                const card = wrapper.querySelector('.policy-card');
+                const glare = wrapper.querySelector('.card-glare');
+
+                // 1. 마우스 진입 (Z-Index 최상단으로!)
+                wrapper.addEventListener('mouseenter', () => {
+                    gsap.to(wrapper, { zIndex: 100, duration: 0 }); // 즉시 위로
+                });
+
+                // 2. 마우스 움직임 (과격한 회전)
+                wrapper.addEventListener('mousemove', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    // [핵심] 각도를 35도까지 팍팍 꺾어버림
+                    const rotateX = ((y - centerY) / centerY) * -35;
+                    const rotateY = ((x - centerX) / centerX) * 35;
+
+                    gsap.to(card, {
+                        duration: 0.1,
+                        rotateX: rotateX,
+                        rotateY: rotateY,
+                        scale: 1.15, // 확대도 확실하게
+                        // 그림자를 아주 멀리 떨어뜨려서 붕 뜬 느낌 강조
+                        boxShadow: "0 50px 100px -20px rgba(0,0,0,0.5)",
+                        ease: "none", // 즉각 반응
+                        overwrite: "auto",
+                        transformPerspective: 600, // [핵심] 원근감을 줄여서 더 왜곡되게 (다이내믹)
+                        transformOrigin: "center center"
+                    });
+
+                    if (glare) {
+                        gsap.to(glare, {
+                            duration: 0.1,
+                            opacity: 1, // 광택도 쨍하게
+                            backgroundPosition: `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`
+                        });
+                    }
+                });
+
+                // 3. 마우스 나감 (복귀)
+                wrapper.addEventListener('mouseleave', () => {
+                    // Z-Index 복구는 애니메이션 끝난 뒤에 (안 그러면 툭 끊김)
+                    gsap.delayedCall(0.5, () => { wrapper.style.zIndex = 1; });
+
+                    gsap.to(card, {
+                        duration: 0.8,
+                        rotateX: 0,
+                        rotateY: 0,
+                        scale: 1,
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                        ease: "elastic.out(1, 0.5)",
+                        overwrite: true
+                    });
+
+                    if (glare) {
+                        gsap.to(glare, { duration: 0.5, opacity: 0 });
+                    }
+                });
+            });
+
+            // 등장 애니메이션
+            gsap.from(".perspective-wrap", {
+                y: 100, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out"
+            });
+        }
+
+        renderCards();
+    </script>
+</body>
+
+</html>
