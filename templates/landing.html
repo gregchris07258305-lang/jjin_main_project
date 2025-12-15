@@ -9,25 +9,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
-        /* [1] 지도 컨테이너 */
-        #svg-container { perspective: 1000px; overflow: visible; }
-        #svg-container svg {
-            width: 100%; height: auto; max-height: 75vh;
-            overflow: visible; display: block; transform-origin: center center;
+        /* [1] 지도 컨테이너 및 SVG 반응형 설정 */
+        #svg-container {
+            perspective: 1000px;
+            overflow: visible;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* [2] 퍼즐 조각 (G태그와 Path태그 모두 호환되도록 설정) */
+        #svg-container svg {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 80vh !important;
+            max-width: 100% !important;
+            display: block;
+            transform-origin: center center;
+            overflow: visible;
+        }
+
+        /* [2] 퍼즐 조각 스타일 */
         .puzzle-piece { cursor: pointer; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         
-        /* G태그가 puzzle-piece일 때 내부 Path 스타일 */
-        g.puzzle-piece path { 
-            fill: #ffffff; stroke: #4A9EA8; stroke-width: 1px; 
-            filter: drop-shadow(0px 4px 0px #4A9EA8) drop-shadow(0px 5px 5px rgba(0, 0, 0, 0.1)); 
-            transition: all 0.4s ease; 
-        }
-        
-        /* Path 자체가 puzzle-piece일 때 스타일 */
-        path.puzzle-piece {
+        g.puzzle-piece path, path.puzzle-piece { 
             fill: #ffffff; stroke: #4A9EA8; stroke-width: 1px; 
             filter: drop-shadow(0px 4px 0px #4A9EA8) drop-shadow(0px 5px 5px rgba(0, 0, 0, 0.1)); 
             transition: all 0.4s ease; 
@@ -43,7 +49,7 @@
         .region-disabled { pointer-events: none; opacity: 0.5; }
         .region-disabled path, path.region-disabled { fill: #eeeeee; stroke: #dddddd; filter: none; }
 
-        /* [4] 툴팁 */
+        /* [4] UI 요소 (툴팁) */
         #info-tooltip { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 100; display: none; align-items: center; }
         .tooltip-line { height: 1px; background-color: #4A9EA8; box-shadow: 0 0 5px #4A9EA8; }
         .tooltip-content { display: flex; flex-direction: column; opacity: 0; }
@@ -52,7 +58,24 @@
         .tooltip-count { font-size: 1rem; color: #6B7280; font-weight: 500; }
         .tooltip-count span { color: #4A9EA8; font-weight: 700; }
 
-        /* 오버레이 */
+        /* 모달 스타일 */
+        #auth-modal { backdrop-filter: blur(8px); }
+        .auth-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .auth-input:focus {
+            background-color: #fff;
+            border-color: #4A9EA8;
+            box-shadow: 0 0 0 4px rgba(74, 158, 168, 0.1);
+        }
+
+        /* 트랜지션용 화이트아웃 오버레이 */
         #transition-overlay { position: fixed; inset: 0; background-color: white; z-index: 9999; pointer-events: none; opacity: 0; }
 
         /* 배경 */
@@ -73,23 +96,92 @@
     </style>
 </head>
 
-<body class="text-gray-900 overflow-hidden h-screen flex flex-col relative">
+<body class="text-gray-900 overflow-hidden h-screen flex flex-col relative font-sans">
 
     <div id="transition-overlay"></div>
 
-    <div id="intro-gate" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-gray-50/80 backdrop-blur-sm transition-all duration-700 hidden">
-        <div class="text-center space-y-6 opacity-0 translate-y-10" id="intro-content">
+    <div id="intro-gate" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-gray-50/90 backdrop-blur-md transition-all duration-700 hidden">
+        <div class="text-center space-y-8 opacity-0 translate-y-10" id="intro-content">
             <div class="space-y-2">
                 <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
-                    당신의 <span class="text-[#4A9EA8]">지역</span>을<br>선택해주세요
+                    당신의 <span class="text-[#4A9EA8]">지역</span>을<br>탐색해보세요
                 </h1>
                 <p class="text-gray-500 text-lg">내가 사는 곳의 청년 정책을 가장 쉽고 빠르게.</p>
             </div>
             <div class="flex flex-col gap-3 w-full max-w-xs mx-auto">
-                <button id="btn-start" class="w-full py-4 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/30 transition-all hover:-translate-y-1 text-lg">
-                    지도에서 지역 찾기 🗺️
+                <button id="btn-start" class="w-full py-4 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/30 transition-all hover:-translate-y-1 text-lg flex items-center justify-center gap-2">
+                    <span>지도에서 지역 찾기</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </button>
             </div>
+            <div class="pt-4 border-t border-gray-200 w-full max-w-xs mx-auto">
+                <p class="text-sm text-gray-500 mb-2">이미 나만의 구역이 있으신가요?</p>
+                <button id="btn-intro-login" class="text-[#4A9EA8] font-bold hover:underline text-base">
+                    기존 회원 로그인 &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 relative overflow-hidden" id="auth-modal-content">
+            
+            <button id="btn-modal-close-icon" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 z-10 p-1 hover:bg-gray-100 rounded-full transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div id="auth-view-promo" class="flex flex-col items-center text-center transition-all duration-300">
+                <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#4A9EA8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                
+                <h2 id="auth-title" class="text-2xl font-bold text-gray-900 mb-2"></h2>
+                <p id="auth-desc" class="text-gray-500 text-sm mb-8 leading-relaxed"></p>
+
+                <div class="space-y-3 w-full">
+                    <button id="btn-modal-signup-trigger" class="w-full py-3.5 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5">
+                        3초 만에 가입하고 보기 🚀
+                    </button>
+                    <button id="btn-switch-to-login" class="w-full py-3.5 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                        로그인
+                    </button>
+                </div>
+            </div>
+
+            <div id="auth-view-login" class="hidden flex-col items-center text-center transition-all duration-300">
+                <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#4A9EA8]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 2a1 1 0 00-1 1v1a1 1 0 01-1 1H7a1 1 0 01-1-1V3a1 1 0 00-1-1H4a2 2 0 00-2 2v15a2 2 0 002 2h16a2 2 0 002-2V4a2 2 0 00-2-2h-1a1 1 0 00-1 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V3a1 1 0 00-1-1h-3z" opacity="0.2"/>
+                        <path fill-rule="evenodd" d="M13.5 19.5h-9a1.5 1.5 0 01-1.5-1.5v-9a1.5 1.5 0 011.5-1.5h9a1.5 1.5 0 011.5 1.5v9a1.5 1.5 0 01-1.5 1.5zM12 15a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">환영합니다!</h2>
+                <p class="text-gray-500 text-sm mb-6">설정해둔 내 구역으로 빠르게 이동하세요.</p>
+
+                <div class="w-full space-y-3 mb-6">
+                    <input type="text" id="login-id" placeholder="아이디" class="auth-input">
+                    <input type="password" id="login-pw" placeholder="비밀번호" class="auth-input">
+                </div>
+
+                <div class="space-y-3 w-full">
+                    <button id="btn-login-submit" class="w-full py-3.5 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                        <span>로그인</span>
+                    </button>
+                    <button id="btn-switch-to-promo" class="w-full py-3.5 text-gray-400 text-sm hover:text-gray-600 underline decoration-gray-300">
+                        아직 계정이 없으신가요?
+                    </button>
+                </div>
+            </div>
+            
+            <button id="btn-modal-browse" class="mt-6 text-xs text-gray-400 font-medium w-full text-center hover:text-[#4A9EA8] transition-colors">
+                오늘은 그냥 둘러보기 &rarr;
+            </button>
         </div>
     </div>
 
@@ -121,34 +213,25 @@
     </div>
 
     <script>
-        // =========================================================================
-        // [1] 데이터 설정 (보내주신 최신 지역명 반영)
-        // =========================================================================
+        // ... (이전과 동일한 데이터 설정) ...
         const REGION_DATA = {
-            // ★ 전국 지도 설정 (Key가 곧 G ID)
             'national': {
                 mapPath: '/static/images/map.svg',
                 title: '전국 소식',
                 desc: '지도를 클릭하여 지역별 뉴스를 확인하세요',
                 db: {
-                    // Case 2: 상세 지도로 넘어갈 지역들
                     'metropolitan': { name: '서울/경기/인천', count: 4250 },
                     'chungnam': { name: '충남/대전/세종', count: 589 },
                     'jeonnam': { name: '전남/광주', count: 340 },
                     'gyeongbug': { name: '경북/대구', count: 781 },
                     'gyeongnam': { name: '경남/부산/울산', count: 890 },
-                    
-                    // Case 1: 바로 main.html로 연결될 지역들
                     'gangwon': { name: '강원도', count: 231 },
                     'chungbug': { name: '충청북도', count: 412 },
                     'jeonbug': { name: '전라북도', count: 620 },
                     'jeju': { name: '제주특별자치도', count: 156 }
                 },
-                // 툴팁 방향 설정 (왼쪽 지역)
                 leftSideIds: ['metropolitan', 'chungnam', 'jeonbug', 'jeonnam', 'jeju']
             },
-
-            // ★ 상세 지도 설정 (Key가 곧 Path ID, 파일이 있는 지역만 정의)
             'metropolitan': {
                 mapPath: '/static/images/total_metropolitan.svg',
                 title: '수도권 상세',
@@ -203,93 +286,195 @@
         const currentRegionKey = urlParams.get('region') || 'national';
         const currentConfig = REGION_DATA[currentRegionKey] || REGION_DATA['national'];
         const isDetailMode = currentRegionKey !== 'national';
-        let tooltipTimeline = null;
+        let isLoggedIn = sessionStorage.getItem('sseuk_logged_in') === 'true';
 
         // =========================================================================
-        // [2] 핵심 로직
+        // [2] 팝업(모달) 로직 - View Switching 포함
+        // =========================================================================
+        const modal = {
+            el: document.getElementById('auth-modal'),
+            content: document.getElementById('auth-modal-content'),
+            
+            // Views
+            viewPromo: document.getElementById('auth-view-promo'),
+            viewLogin: document.getElementById('auth-view-login'),
+            
+            // Elements in Promo View
+            title: document.getElementById('auth-title'),
+            desc: document.getElementById('auth-desc'),
+            btnSignupTrigger: document.getElementById('btn-modal-signup-trigger'),
+            btnSwitchToLogin: document.getElementById('btn-switch-to-login'),
+            
+            // Elements in Login View
+            inputID: document.getElementById('login-id'),
+            inputPW: document.getElementById('login-pw'),
+            btnLoginSubmit: document.getElementById('btn-login-submit'),
+            btnSwitchToPromo: document.getElementById('btn-switch-to-promo'),
+            
+            // Common
+            btnBrowse: document.getElementById('btn-modal-browse'),
+            btnCloseIcon: document.getElementById('btn-modal-close-icon'),
+            
+            // State
+            targetCallback: null,
+
+            // 모달 열기 (기본적으로 Promo 뷰를 먼저 보여줌, startMode로 변경 가능)
+            show: function(regionName, count, navigateCallback, startMode = 'promo') {
+                this.targetCallback = navigateCallback;
+                this.el.classList.remove('hidden');
+                
+                // 애니메이션
+                gsap.to(this.el, { opacity: 1, duration: 0.3 });
+                gsap.to(this.content, { scale: 1, duration: 0.3, ease: 'back.out(1.2)' });
+
+                // 데이터 바인딩
+                if(regionName) {
+                    this.title.innerHTML = `<span class="text-[#4A9EA8]">${regionName}</span> 소식을<br>받아보시겠습니까?`;
+                    this.desc.innerHTML = `총 ${count.toLocaleString()}건의 청년 정책을<br>놓치지 말고 확인하세요.`;
+                }
+
+                // 뷰 초기화
+                this.switchView(startMode);
+                
+                // 이벤트 바인딩
+                this.bindEvents();
+            },
+
+            switchView: function(mode) {
+                if (mode === 'login') {
+                    this.viewPromo.classList.add('hidden');
+                    this.viewLogin.classList.remove('hidden');
+                    this.viewLogin.classList.add('flex');
+                    this.inputID.focus();
+                } else {
+                    this.viewLogin.classList.add('hidden');
+                    this.viewLogin.classList.remove('flex');
+                    this.viewPromo.classList.remove('hidden');
+                }
+            },
+            
+            bindEvents: function() {
+                // 1. Promo -> Login 전환
+                this.btnSwitchToLogin.onclick = () => this.switchView('login');
+                
+                // 2. Login -> Promo 전환
+                this.btnSwitchToPromo.onclick = () => this.switchView('promo');
+
+                // 3. 빠른 가입 (시뮬레이션)
+                this.btnSignupTrigger.onclick = () => {
+                    this.completeAuth("가입이 완료되었습니다!");
+                };
+
+                // 4. 로그인 제출 (데이터 전송 시뮬레이션)
+                this.btnLoginSubmit.onclick = () => {
+                    const id = this.inputID.value;
+                    const pw = this.inputPW.value;
+                    if(!id || !pw) {
+                        alert("아이디와 비밀번호를 입력해주세요.");
+                        return;
+                    }
+                    // TODO: 여기서 DB 담당자가 만들어준 API로 전송
+                    console.log(`[Send to DB] ID: ${id}, PW: ${pw}`); 
+                    this.completeAuth("로그인 되었습니다.");
+                };
+
+                // 5. 둘러보기 (비로그인 이동)
+                this.btnBrowse.onclick = () => {
+                    this.hide();
+                    // 비로그인 상태로 콜백 실행
+                    if(this.targetCallback) this.targetCallback();
+                };
+
+                // 6. 닫기
+                this.btnCloseIcon.onclick = () => this.hide();
+            },
+
+            completeAuth: function(msg) {
+                this.hide();
+                alert(msg); // 실제로는 토스트 메시지 추천
+                sessionStorage.setItem('sseuk_logged_in', 'true');
+                isLoggedIn = true;
+                if(this.targetCallback) this.targetCallback();
+            },
+            
+            hide: function() {
+                gsap.to(this.el, { opacity: 0, duration: 0.2 });
+                gsap.to(this.content, { scale: 0.95, duration: 0.2, onComplete: () => {
+                    this.el.classList.add('hidden');
+                    // Input 초기화
+                    this.inputID.value = "";
+                    this.inputPW.value = "";
+                }});
+            }
+        };
+
+        // =========================================================================
+        // [3] 지도 이벤트
         // =========================================================================
         function initMapEvents() {
             const svgElement = document.querySelector('#svg-container svg');
             if (!svgElement) return;
 
+            svgElement.removeAttribute('width');
+            svgElement.removeAttribute('height');
+            
             const tooltip = document.querySelector('#info-tooltip');
-            const tooltipLine = tooltip.querySelector('.tooltip-line');
-            const tooltipContent = tooltip.querySelector('.tooltip-content');
             const tTitle = tooltip.querySelector('.tooltip-title');
             const tCountSpan = tooltip.querySelector('.tooltip-count span');
             const overlay = document.getElementById('transition-overlay');
 
             const activeIds = Object.keys(currentConfig.db);
-            console.log(`[Init] Mode: ${currentRegionKey}, Looking for:`, activeIds);
-
             const allElements = svgElement.querySelectorAll('g, path');
+            let tooltipTimeline = null;
 
             allElements.forEach(element => {
                 const rawId = element.id || '';
                 const regionId = rawId.trim();
 
                 if (!regionId) return;
-
-                // [전국 모드 필터링] _st ID 무시
-                if (!isDetailMode) {
-                    if (regionId.endsWith('_st')) return; 
-                }
-
-                // [상세 모드 필터링] total_, .svg 무시
-                if (isDetailMode) {
-                    if (regionId.startsWith('total_') || regionId.includes('.svg')) return; 
-                }
-
-                // [랜드마크]
+                if (!isDetailMode && regionId.endsWith('_st')) return; 
+                if (isDetailMode && (regionId.startsWith('total_') || regionId.includes('.svg'))) return; 
                 if (regionId.toLowerCase().includes('lm')) {
                     element.classList.add('landmark-piece');
                     return; 
                 }
 
-                // [매칭 성공 시 이벤트 바인딩]
                 if (activeIds.includes(regionId)) {
                     element.classList.add('puzzle-piece');
 
-                    // Hover Event
                     element.addEventListener('mouseenter', function() {
-                        // z-index handling
                         if (this.tagName.toLowerCase() === 'path' || this.tagName.toLowerCase() === 'g') {
                              this.parentNode.appendChild(this); 
                         }
-                        
                         const data = currentConfig.db[regionId] || { name: 'Unknown', count: 0 };
                         tTitle.innerText = data.name;
                         tCountSpan.innerText = data.count.toLocaleString();
-
-                        const rect = element.getBoundingClientRect();
+                        
                         tooltip.style.display = 'flex';
-                        
-                        let isLeft = false;
-                        if (!isDetailMode) {
-                            isLeft = (currentConfig.leftSideIds || []).includes(regionId);
-                        } else {
-                            isLeft = (rect.left + rect.width/2) < (window.innerWidth / 2);
-                        }
-                        
+                        const rect = element.getBoundingClientRect();
+                        const isLeft = (!isDetailMode) ? (currentConfig.leftSideIds || []).includes(regionId) : (rect.left + rect.width/2) < (window.innerWidth / 2);
+                        const tLine = tooltip.querySelector('.tooltip-line');
+                        const tContent = tooltip.querySelector('.tooltip-content');
+
                         if (isLeft) {
                             tooltip.style.flexDirection = 'row-reverse';
-                            tooltipLine.style.marginRight = '0px'; tooltipLine.style.marginLeft = '10px'; tooltipLine.style.transformOrigin = 'right center';
-                            tooltipContent.style.alignItems = 'flex-end';
+                            tLine.style.marginRight = '0px'; tLine.style.marginLeft = '10px'; tLine.style.transformOrigin = 'right center';
+                            tContent.style.alignItems = 'flex-end';
                             const startX = rect.left + (rect.width * 0.2); const startY = rect.top + (rect.height * 0.3);
                             tooltip.style.left = 'auto'; tooltip.style.right = `${window.innerWidth - startX}px`; tooltip.style.top = `${startY}px`;
                         } else {
                             tooltip.style.flexDirection = 'row';
-                            tooltipLine.style.marginRight = '10px'; tooltipLine.style.marginLeft = '0px'; tooltipLine.style.transformOrigin = 'left center';
-                            tooltipContent.style.alignItems = 'flex-start';
+                            tLine.style.marginRight = '10px'; tLine.style.marginLeft = '0px'; tLine.style.transformOrigin = 'left center';
+                            tContent.style.alignItems = 'flex-start';
                             const startX = rect.right - (rect.width * 0.2); const startY = rect.top + (rect.height * 0.3);
                             tooltip.style.right = 'auto'; tooltip.style.left = `${startX}px`; tooltip.style.top = `${startY}px`;
                         }
-
+                        
                         if (tooltipTimeline) tooltipTimeline.kill();
                         tooltipTimeline = gsap.timeline();
-                        tooltipTimeline.set(tooltipLine, { width: 0 }).set(tooltipContent, { opacity: 0, y: 10 })
-                            .to(tooltipLine, { width: 80, duration: 0.4, ease: "power2.out" })
-                            .to(tooltipContent, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }, "-=0.2");
+                        tooltipTimeline.set(tLine, { width: 0 }).set(tContent, { opacity: 0, y: 10 })
+                            .to(tLine, { width: 80, duration: 0.4, ease: "power2.out" })
+                            .to(tContent, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }, "-=0.2");
                     });
 
                     element.addEventListener('mouseleave', function() {
@@ -297,56 +482,56 @@
                         tooltip.style.display = 'none';
                     });
 
-                    // [Click Event - 핵심 로직 분기]
                     element.addEventListener('click', (e) => {
                         e.stopPropagation();
                         tooltip.style.display = 'none';
 
-                        // 1. 공통 트랜지션 효과 (줌인 & 화이트아웃)
-                        const runTransition = (callback) => {
-                            gsap.timeline()
-                                .to(element, { scale: 1.2, duration: 0.2, ease: "back.in(2)", zIndex: 100 }) 
-                                .to("#svg-container", { scale: 5, opacity: 0, duration: 0.8, ease: "power4.in" })
-                                .to(overlay, { opacity: 1, duration: 0.5 }, "<0.3")
-                                .to({}, { onComplete: callback });
-                        };
+                        const data = currentConfig.db[regionId];
+                        const hasDetailMap = REGION_DATA.hasOwnProperty(regionId);
 
-                        if (!isDetailMode) {
-                            // [전국 지도 모드]
-                            // REGION_DATA에 해당 regionId가 Key로 존재하면 상세 지도가 있는 곳 (Case 2)
-                            if (REGION_DATA[regionId]) {
-                                // Case 2: 상세 지도로 이동 (페이지 리로드 ?region=...)
-                                runTransition(() => {
-                                    window.location.search = `?region=${regionId}`;
-                                });
-                            } else {
-                                // Case 1: 상세 지도가 없는 곳 (강원, 제주, 전북, 충북)
-                                // -> 바로 main.html로 이동하며 쿼리 파라미터 전달
-                                runTransition(() => {
-                                    window.location.href = `main.html?region=${regionId}`;
-                                });
-                            }
-                        } else {
-                            // [상세 지도 모드]
-                            // Case 2의 2단계: 상세 지역(예: detail_daegu) 클릭 시 main.html로 이동
-                            runTransition(() => {
-                                window.location.href = `main.html?region=${regionId}`;
+                        // 1. 전국 지도 & 상세 지도 있음 -> 즉시 이동
+                        if (!isDetailMode && hasDetailMap) {
+                            performTransition(() => {
+                                window.location.search = `?region=${regionId}`;
                             });
+                            return; 
+                        }
+
+                        // 2. 그 외 (전국&상세없음 OR 상세지도내부) -> 로그인 체크
+                        const targetUrl = `main.html?region=${regionId}`;
+                        
+                        if (isLoggedIn) {
+                            performTransition(() => { window.location.href = targetUrl; });
+                        } else {
+                            // 팝업 오픈
+                            modal.show(data.name, data.count, 
+                                () => { performTransition(() => { window.location.href = targetUrl; }); }
+                            );
                         }
                     });
 
                 } else {
-                    // 매칭 실패 시 비활성 처리
                     element.classList.add('region-disabled');
                 }
             });
+
+            function performTransition(callback) {
+                gsap.timeline()
+                    .to("#svg-container", { scale: 5, opacity: 0, duration: 0.8, ease: "power4.in" })
+                    .to(overlay, { opacity: 1, duration: 0.5 }, "<0.3")
+                    .to({}, { onComplete: callback });
+            }
         }
 
+        // =========================================================================
+        // [4] 실행부
+        // =========================================================================
         document.addEventListener("DOMContentLoaded", () => {
             const mainContent = document.getElementById('main-content');
             const introGate = document.getElementById('intro-gate');
             const introContent = document.getElementById('intro-content');
             const btnStart = document.getElementById('btn-start');
+            const btnIntroLogin = document.getElementById('btn-intro-login');
             const backNav = document.getElementById('back-nav');
             const headerTitle = document.getElementById('header-title');
             const headerDesc = document.getElementById('header-desc');
@@ -354,25 +539,34 @@
             headerTitle.innerText = `Sseuk-Sseuk : ${currentConfig.title}`;
             headerDesc.innerText = currentConfig.desc;
 
-            // UI 분기 처리
-            if (isDetailMode) {
-                introGate.classList.remove('flex');
+            const hasVisited = sessionStorage.getItem('sseuk_intro_visited');
+
+            if (isDetailMode || hasVisited || isLoggedIn) {
                 introGate.classList.add('hidden');
-                backNav.classList.remove('hidden');
+                if (isDetailMode) backNav.classList.remove('hidden');
+                mainContent.classList.remove('hidden');
+                mainContent.style.opacity = 1;
             } else {
                 introGate.classList.remove('hidden');
                 introGate.classList.add('flex');
-                gsap.to(introContent, {
-                    opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.7)", delay: 0.2
-                });
-                if(btnStart) {
-                    btnStart.addEventListener('click', () => {
-                        gsap.to(introGate, {
-                            opacity: 0, duration: 0.8, ease: "power2.inOut",
-                            onComplete: () => { introGate.style.display = 'none'; }
-                        });
+                
+                gsap.to(introContent, { opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.7)", delay: 0.2 });
+
+                btnStart.addEventListener('click', () => {
+                    sessionStorage.setItem('sseuk_intro_visited', 'true');
+                    gsap.to(introGate, {
+                        opacity: 0, duration: 0.8, ease: "power2.inOut",
+                        onComplete: () => { introGate.style.display = 'none'; }
                     });
-                }
+                });
+
+                // 인트로의 '기존 회원 로그인' 버튼
+                btnIntroLogin.addEventListener('click', () => {
+                    // 바로 로그인 뷰로 시작, 콜백은 없으므로(인트로니까) 그냥 reload나 메인 이동
+                    modal.show(null, 0, () => {
+                        window.location.reload(); 
+                    }, 'login');
+                });
             }
 
             fetch(currentConfig.mapPath)
@@ -383,8 +577,10 @@
                 .then(text => {
                     document.getElementById('svg-container').innerHTML = text;
                     initMapEvents();
-                    mainContent.classList.remove('hidden');
-                    gsap.to(mainContent, { opacity: 1, duration: 0.5 });
+                    if(!introGate.classList.contains('hidden')) {
+                         mainContent.classList.remove('hidden');
+                         gsap.to(mainContent, { opacity: 1, duration: 0.5 });
+                    }
                 })
                 .catch(err => {
                     console.error(err);
