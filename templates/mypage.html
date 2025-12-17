@@ -8,11 +8,9 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
-
     <link rel="stylesheet" href="/static/style.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -37,47 +35,47 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .header-text h1, .header-text p {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(30px);
+            will-change: transform, opacity;
+        }
+        /* 텍스트 영역 높이 확보 */
+        .header-text {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    </style>
 </head>
 
 <body class="font-sans antialiased">
     
     <nav class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/70 backdrop-blur-md transition-all duration-300">
-    <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
-        
-        <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
-            <img src="/static/images/logo.svg" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
-        </a>
+        <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
+            
+            <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
+                <img src="/static/images/logo.svg" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
+            </a>
 
-        <ul class="flex gap-2 md:gap-3">
-            <li>
-                <a href="/main.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
-                    Home
-                </a>
-            </li>
-            <li>
-                <a href="/all.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3d8b94] transition-all">
-                    All Policies
-                </a>
-            </li>
-            <li>
-                <a href="/mypage.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-orange shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e06d2e] transition-all">
-                    My Page
-                </a>
-            </li>
-            <li>
-                <a href="/about.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-beige shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#c49f5b] transition-all">
-                    About
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+            <ul class="flex gap-2 md:gap-3">
+                <li><a href="/main.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">Home</a></li>
+                <li><a href="/all.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3d8b94] transition-all">All Policies</a></li>
+                <li><a href="/mypage.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-orange shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e06d2e] transition-all">My Page</a></li>
+                <li><a href="/about.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-beige shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#c49f5b] transition-all">About</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <main class="body-container mypage-container max-w-[1200px] mx-auto px-5 py-10">
         
         <section class="w-full mb-12 pt-4 flex flex-col md:flex-row items-center justify-between gap-10">
             
-            <div class="flex-1 text-center md:text-left header-text">
+            <div class="flex-1 text-center md:text-left header-text items-center md:items-start">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-primary-orange text-xs font-bold mb-6">
                     <span>My Analytics</span>
                     <i class="fa-solid fa-star text-[10px]"></i>
@@ -107,7 +105,6 @@
         </section>
 
         <div class="w-full h-[1px] bg-gray-100 mb-12"></div>
-
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-[minmax(180px,auto)]">
 
@@ -218,6 +215,15 @@
     </div>
 
     <script src="/static/script.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.playHeaderAnimation) {
+                setTimeout(() => {
+                    window.playHeaderAnimation();
+                }, 100);
+            }
+        });
+    </script>
 </body>
-
 </html>

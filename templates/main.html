@@ -7,9 +7,7 @@
     <title>청년 정책 플랫폼</title>
 
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-
-    <link rel="stylesheet" as="style" crossorigin
-        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,16 +15,10 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary-orange': '#F48245',
-                        'primary-teal': '#4A9EA8',
-                        'primary-beige': '#D9B36C',
-                        'primary-red': '#FF5A5F',
-                        'bg-light': '#FFFFFF',
-                        'text-main': '#000000',
+                        'primary-orange': '#F48245', 'primary-teal': '#4A9EA8', 'primary-beige': '#D9B36C', 'primary-red': '#FF5A5F',
+                        'bg-light': '#FFFFFF', 'text-main': '#000000',
                     },
-                    fontFamily: {
-                        sans: ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', '"Helvetica Neue"', '"Segoe UI"', '"Apple SD Gothic Neo"', '"Noto Sans KR"', '"Malgun Gothic"', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'sans-serif'] }
                 }
             }
         }
@@ -38,47 +30,63 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+    <style>
+        /* 텍스트 영역 높이 고정 (레이아웃 흔들림 방지) */
+        .header-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 180px; 
+        }
+
+        /* [중요] 초기 상태는 CSS로 숨기지 않습니다. 
+           script.js의 initHeaderAnimation()이 JS로 즉시 opacity:0 처리를 합니다.
+           이렇게 해야 GSAP이 통제권을 100% 가집니다.
+        */
+        
+        /* 비디오 영역 공간 확보 (레이아웃 흔들림 방지) */
+        .header-image-container {
+            width: 100%;
+            aspect-ratio: 16 / 9; 
+            min-height: 300px;
+            max-height: 400px;
+            position: relative;
+            background-color: #f9fafb; 
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-image-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        #preloader { opacity: 1; visibility: visible; display: flex; transition: opacity 0.5s ease; }
+    </style>
 </head>
 
 <body class="font-sans antialiased">
-    <div id="preloader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-500">
+    
+    <div id="preloader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
         <div id="lottie-container" class="w-40 h-40"></div>
     </div>
 
     <nav class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/70 backdrop-blur-md transition-all duration-300">
         <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
-
             <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
-                <img src="/static/images/logo.svg"
-                    onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo"
-                    class="h-10 w-auto">
+                <img src="/static/images/logo.svg" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
             </a>
-
             <ul class="flex gap-2 md:gap-3">
-                <li>
-                    <a href="/main.html"
-                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
-                        Home
-                    </a>
-                </li>
-                <li>
-                    <a href="/all.html"
-                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3d8b94] transition-all">
-                        All Policies
-                    </a>
-                </li>
-                <li>
-                    <a href="/mypage.html"
-                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-orange shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e06d2e] transition-all">
-                        My Page
-                    </a>
-                </li>
-                <li>
-                    <a href="/about.html"
-                        class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-beige shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#c49f5b] transition-all">
-                        About
-                    </a>
-                </li>
+                <li><a href="/main.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">Home</a></li>
+                <li><a href="/all.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3d8b94] transition-all">All Policies</a></li>
+                <li><a href="/mypage.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-orange shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e06d2e] transition-all">My Page</a></li>
+                <li><a href="/about.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-beige shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#c49f5b] transition-all">About</a></li>
             </ul>
         </div>
     </nav>
@@ -86,154 +94,73 @@
     <main class="relative body-container mypage-container max-w-[1200px] mx-auto px-5 py-10">
         <section class="header-section">
             <div class="w-full flex flex-col md:flex-row items-center justify-between gap-6 lg:gap-10 mb-12 pt-4">
-
-                <div class="w-full md:w-[30%] text-center md:text-left order-1 shrink-0 px-3 py-1 header-text">
+                
+                <div class="w-full md:w-[45%] text-center md:text-left order-1 shrink-0 px-3 py-1 header-text">
                     <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
-                        쓱-쓱 훑어보는<br>
-                        청년 정책 소식 📰
+                        &nbsp;<br>&nbsp;
                     </h1>
                     <p class="text-gray-500 text-lg leading-relaxed break-keep">
-                        나에게 딱 맞는 정책을 쉽고 빠르게 찾아보세요.<br class="hidden md:block">
-                        매일 업데이트되는 새로운 소식을 놓치지 마세요!
+                        &nbsp;<br>&nbsp;
                     </p>
                 </div>
 
-                <div class="w-full md:w-[70%] flex justify-center md:justify-end relative order-2 header-image">
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-50 rounded-full blur-3xl -z-10 opacity-60"></div>
-                    <video autoplay muted loop playsinline poster="/static/images/header_poster.jpg"
-                        class="w-full max-w-full object-contain object-center md:object-right drop-shadow-md mask-image-gradient">
-                        <source src="/static/images/header_video.webm" type="video/webm">
-                        <source src="/static/images/header_video.mp4" type="video/mp4">
-                    </video>
+                <div class="w-full md:w-[55%] flex justify-center md:justify-end relative order-2 header-image">
+                    <div class="header-image-container relative">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-50 rounded-full blur-3xl -z-10 opacity-60"></div>
+                        <video autoplay muted loop playsinline poster="/static/images/header_poster.jpg" class="mask-image-gradient">
+                            <source src="/static/images/header_video.webm" type="video/webm">
+                            <source src="/static/images/header_video.mp4" type="video/mp4">
+                        </video>
+                    </div>
                 </div>
             </div>
-
+            
             <div class="dvline">
-                <span class="dv-item">Static Bloom</span>
-                <span class="dv-item pink-bullet">2023</span>
-                <span class="dv-item pink-bullet">Hazy, melancholic</span>
-                <span class="dv-item pink-bullet long-text">For the light leaks and long silences</span>
+                <span class="dv-item">Static Bloom</span><span class="dv-item pink-bullet">2023</span><span class="dv-item pink-bullet">Hazy, melancholic</span><span class="dv-item pink-bullet long-text">For the light leaks and long silences</span>
             </div>
         </section>
 
         <section class="tinder-section">
-            <div class="section-title">
-                <h2>지금 주목해야 할 정책 🔥</h2>
-                <p>카드를 좌우로 넘겨보세요 (스와이프)</p>
-            </div>
-            <div class="swiper-container">
-                <div class="card-stack" id="tinder-list">
-                    <div class="no-more-cards">모든 카드를 확인했습니다! 🎉</div>
-                </div>
-                <div id="swipe-guide" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none opacity-0 flex flex-col items-center justify-center gap-3">
-                    <div class="w-20 h-20 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl border border-white/10">
-                        <i class="fa-solid fa-hand-pointer text-3xl text-gray-200" id="hand-icon"></i>
-                    </div>
-                    <div class="px-4 py-2 bg-black/70 backdrop-blur-sm shadow-lg border border-white/10">
-                        <p class="text-sm font-bold text-gray-200 whitespace-nowrap">👉 오른쪽: 찜 ❤️ &nbsp;|&nbsp; 👈 왼쪽: 넘기기</p>
-                    </div>
-                </div>
-            </div>
+            <div class="section-title"><h2>지금 주목해야 할 정책 🔥</h2><p>카드를 좌우로 넘겨보세요 (스와이프)</p></div>
+            <div class="swiper-container"><div class="card-stack" id="tinder-list"><div class="no-more-cards">모든 카드를 확인했습니다! 🎉</div></div>
+            <div id="swipe-guide" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none opacity-0 flex flex-col items-center justify-center gap-3"><div class="w-20 h-20 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl border border-white/10"><i class="fa-solid fa-hand-pointer text-3xl text-gray-200" id="hand-icon"></i></div><div class="px-4 py-2 bg-black/70 backdrop-blur-sm shadow-lg border border-white/10"><p class="text-sm font-bold text-gray-200 whitespace-nowrap">👉 오른쪽: 찜 ❤️ &nbsp;|&nbsp; 👈 왼쪽: 넘기기</p></div></div></div>
         </section>
 
         <section class="search-section">
-            <h2>관심있는 정책 키워드는<br>직접 찾아보세요!</h2>
-            <p>원하는 키워드로 정책을 검색해보세요.</p>
-            <div class="search-bar-container">
-                <div class="icon-area"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <input type="text" id="search-input" placeholder="키워드를 입력해보세요 (예: 취업, 주거)">
-                <button id="search-btn">SEARCH</button>
-            </div>
+            <h2>관심있는 정책 키워드는<br>직접 찾아보세요!</h2><p>원하는 키워드로 정책을 검색해보세요.</p>
+            <div class="search-bar-container"><div class="icon-area"><i class="fa-solid fa-magnifying-glass"></i></div><input type="text" id="search-input" placeholder="키워드를 입력해보세요 (예: 취업, 주거)"><button id="search-btn">SEARCH</button></div>
         </section>
 
         <section class="slide-section">
             <div class="section-header"><h3 id="result-message">추천 정책 (30건)</h3></div>
             <div class="relative marquee-wrapper">
-                <div class="absolute top-0 left-0 h-full w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-                <div class="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-                <div class="marquee-row scroll-left" id="slide-row-1"></div>
-                <div class="marquee-row scroll-right" id="slide-row-2"></div>
+                <div class="absolute top-0 left-0 h-full w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div><div class="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                <div class="marquee-row scroll-left" id="slide-row-1"></div><div class="marquee-row scroll-right" id="slide-row-2"></div>
             </div>
         </section>
 
         <section class="membership-section">
-            <div class="membership-content">
-                <h2>나에게<br>정말 필요한 정책만<br>차곡차곡 쌓아 봐요!</h2>
-                <div class="membership-btns">
-                    <button id="btn-signup" class="btn-primary-red">회원가입</button>
-                    <button id="btn-share" class="btn-secondary-white">공유하기</button>
-                </div>
-                <div class="membership-img">
-                    <img src="/static/images/membership_image.png" onerror="this.src='https://placehold.co/400x300/transparent/orange?text=Login+Illustration'" alt="Membership Illustration">
-                </div>
-            </div>
+            <div class="membership-content"><h2>나에게<br>정말 필요한 정책만<br>차곡차곡 쌓아 봐요!</h2><div class="membership-btns"><button id="btn-signup" class="btn-primary-red">회원가입</button><button id="btn-share" class="btn-secondary-white">공유하기</button></div><div class="membership-img"><img src="/static/images/membership_image.png" onerror="this.src='https://placehold.co/400x300/transparent/orange?text=Login+Illustration'" alt="Membership Illustration"></div></div>
         </section>
     </main>
 
-    <div class="marquee-area">
-        <div class="track">
-            <span>서울시 청년 정책 모음 🚀 취업부터 주거까지 한눈에 확인하세요! &nbsp;&nbsp;&nbsp; 서울시 청년 정책 모음 🚀 취업부터 주거까지 한눈에 확인하세요! &nbsp;&nbsp;&nbsp; </span>
-        </div>
-    </div>
+    <div class="marquee-area"><div class="track"><span>서울시 청년 정책 모음 🚀 취업부터 주거까지 한눈에 확인하세요! &nbsp;&nbsp;&nbsp; 서울시 청년 정책 모음 🚀 취업부터 주거까지 한눈에 확인하세요! &nbsp;&nbsp;&nbsp; </span></div></div>
 
-    <div id="policy-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div class="modal-image"><img id="modal-img" src="" alt="Policy Image"><span id="modal-category" class="modal-tag">카테고리</span></div>
-            <div class="modal-body">
-                <h2 id="modal-title">정책 제목</h2>
-                <p id="modal-desc">정책 상세 내용</p>
-                <p id="modal-date" class="date">마감일</p>
-                <div class="modal-actions">
-                    <button id="modal-close-btn" class="action-btn back-btn"><i class="fa-solid fa-arrow-left"></i> 되돌아가기</button>
-                    <button id="modal-heart-btn" class="action-btn heart-btn"><i class="fa-regular fa-heart"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="signup-modal" class="modal-overlay hidden">
-        <div class="modal-content small-modal">
-            <div class="modal-header">
-                <h3>회원가입</h3>
-                <button class="close-icon-btn" onclick="closeSignupModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body form-body">
-                <p class="form-desc">간편하게 가입하고 맞춤 정책을 추천받으세요!</p>
-                <input type="text" placeholder="아이디" class="modal-input">
-                <input type="password" placeholder="비밀번호" class="modal-input">
-                <input type="text" placeholder="이름" class="modal-input">
-                <button class="btn-primary-red full-width">가입하기</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="share-modal" class="modal-overlay hidden">
-        <div class="modal-content small-modal">
-            <div class="modal-header">
-                <h3>공유하기</h3>
-                <button class="close-icon-btn" onclick="closeShareModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body form-body">
-                <p class="form-desc">아래 링크를 복사해서 친구들에게 공유해보세요.</p>
-                <div class="url-box">
-                    <input type="text" id="share-url-input" readonly>
-                    <button onclick="copyUrl()" class="copy-btn">복사</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="policy-modal" class="modal-overlay hidden"><div class="modal-content"><div class="modal-image"><img id="modal-img" src="" alt="Policy Image"><span id="modal-category" class="modal-tag">카테고리</span></div><div class="modal-body"><h2 id="modal-title">정책 제목</h2><p id="modal-desc">정책 상세 내용</p><p id="modal-date" class="date">마감일</p><div class="modal-actions"><button id="modal-close-btn" class="action-btn back-btn"><i class="fa-solid fa-arrow-left"></i> 되돌아가기</button><button id="modal-heart-btn" class="action-btn heart-btn"><i class="fa-regular fa-heart"></i></button></div></div></div></div>
+    <div id="signup-modal" class="modal-overlay hidden"><div class="modal-content small-modal"><div class="modal-header"><h3>회원가입</h3><button class="close-icon-btn" onclick="closeSignupModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body form-body"><p class="form-desc">간편하게 가입하고 맞춤 정책을 추천받으세요!</p><input type="text" placeholder="아이디" class="modal-input"><input type="password" placeholder="비밀번호" class="modal-input"><input type="text" placeholder="이름" class="modal-input"><button class="btn-primary-red full-width">가입하기</button></div></div></div>
+    <div id="share-modal" class="modal-overlay hidden"><div class="modal-content small-modal"><div class="modal-header"><h3>공유하기</h3><button class="close-icon-btn" onclick="closeShareModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body form-body"><p class="form-desc">아래 링크를 복사해서 친구들에게 공유해보세요.</p><div class="url-box"><input type="text" id="share-url-input" readonly><button onclick="copyUrl()" class="copy-btn">복사</button></div></div></div></div>
 
     <script src="/static/script.js"></script>
-    
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // 1. 변수 초기화
+            // 변수 설정
             const urlParams = new URLSearchParams(window.location.search);
             let regionId = urlParams.get('region');
-            const showAnim = urlParams.get('anim'); // '1'이면 로딩 애니메이션 실행 중
+            const showAnim = urlParams.get('anim');
             const preloader = document.getElementById('preloader');
 
-            // 2. 지역 정보 복구 (Session Storage)
+            // Session Storage
             if (regionId) {
                 sessionStorage.setItem('sseuk_selected_region', regionId);
             } else {
@@ -241,7 +168,6 @@
                 if (savedRegion) regionId = savedRegion;
             }
 
-            // 3. UI 데이터 매핑
             const REGION_NAMES = {
                 'gangwon': '강원도', 'chungbug': '충청북도', 'jeonbug': '전라북도', 'jeju': '제주특별자치도',
                 'detail_seoul': '서울특별시', 'detail_incheon': '인천광역시', 'detail_gyeonggi': '경기도',
@@ -251,51 +177,50 @@
                 'detail_busan': '부산광역시', 'detail_ulsan': '울산광역시', 'detail_gyeongnam': '경상남도'
             };
 
-            // 4. [핵심] 데이터 업데이트 (애니메이션 시작 전, 텍스트부터 조용히 바꿈)
+            const headerTitle = document.querySelector('.header-text h1');
+            const headerDesc = document.querySelector('.header-text p');
+            const searchInput = document.getElementById('search-input');
+
+            // 1. [데이터 교체] 프리로더 뒤에서 텍스트를 바꿉니다.
+            // script.js가 이미 initHeaderAnimation()으로 요소를 숨겨놨기 때문에, 여기서 내용을 바꿔도 화면엔 안 보입니다.
             if (regionId && REGION_NAMES[regionId]) {
                 const regionName = REGION_NAMES[regionId];
-                const headerTitle = document.querySelector('.header-text h1');
-                const headerDesc = document.querySelector('.header-text p');
-                const searchInput = document.getElementById('search-input');
-
-                // 내용만 교체 (GSAP 코드 제거하여 충돌 방지)
-                if (headerTitle) {
-                    headerTitle.innerHTML = `<span class="text-primary-teal">${regionName}</span>의<br>청년 정책 소식 📰`;
-                }
-                if (headerDesc) {
-                    headerDesc.innerHTML = `${regionName} 청년들을 위한 맞춤 정책을 모았습니다.<br>지금 바로 확인해보세요!`;
-                }
-                if (searchInput) {
-                    searchInput.value = `#${regionName} #취업 #주거`;
-                }
-                console.log(`✅ Region Content Ready: ${regionName}`);
+                if (headerTitle) headerTitle.innerHTML = `<span class="text-primary-teal">${regionName}</span>의<br>청년 정책 소식 📰`;
+                if (headerDesc) headerDesc.innerHTML = `${regionName} 청년들을 위한 맞춤 정책을 모았습니다.<br>지금 바로 확인해보세요!`;
+                if (searchInput) searchInput.value = `#${regionName} #취업 #주거`;
+            } else {
+                if (headerTitle) headerTitle.innerHTML = `쓱-쓱 훑어보는<br>청년 정책 소식 📰`;
+                if (headerDesc) headerDesc.innerHTML = `나에게 딱 맞는 정책을 쉽고 빠르게 찾아보세요.<br>매일 업데이트되는 새로운 소식을 놓치지 마세요!`;
             }
 
-            // 5. 애니메이션 실행 제어
-            if (showAnim !== '1') {
-                // [Case A] 네비게이션/새로고침으로 옴 (로딩 화면 없음)
-                // -> 프리로더 즉시 끄고, 우리가 수동으로 애니메이션을 실행시켜야 함
+            // 2. [로딩 종료 안전장치]
+            function forceHidePreloader() {
+                if (preloader && preloader.style.display !== 'none') {
+                    // 혹시 script.js의 Lottie가 실패해도 강제로 끄고 애니메이션 실행
+                    gsap.to(preloader, {
+                        opacity: 0,
+                        duration: 0.5,
+                        onComplete: () => {
+                            preloader.style.display = 'none';
+                            if(window.playHeaderAnimation) window.playHeaderAnimation();
+                        }
+                    });
+                }
+            }
+
+            // 3. 실행 분기
+            if (showAnim === '1') {
+                // 랜딩페이지에서 옴 -> script.js가 처리하도록 기다리되, 3초 안전장치만 걸어둠
+                setTimeout(() => forceHidePreloader(), 3000); 
+            } else {
+                // 바로 접속함 -> 로딩 즉시 끄고 바로 애니메이션
                 if (preloader) preloader.style.display = 'none';
                 
-                // script.js가 로드된 후 실행되도록 아주 약간의 여유를 둠
+                // 요소 초기화가 확실히 끝난 뒤 실행하기 위해 아주 약간의 지연
                 setTimeout(() => {
-                    if (window.playHeaderAnimation) {
-                        window.playHeaderAnimation(); // "자, 이제 등장!"
-                    }
+                    // 여기서도 playHeaderAnimation을 부르면 됩니다 (이미 script.js에 정의됨)
+                    if(window.playHeaderAnimation) window.playHeaderAnimation();
                 }, 50);
-
-            } else {
-                // [Case B] 랜딩페이지에서 옴 (로딩 화면 있음)
-                // -> script.js가 Lottie 끝난 뒤 자동으로 playHeaderAnimation()을 부를 것임.
-                // -> 우리는 아무것도 안 해도 됨. 텍스트는 이미 위에서 바꿨으니까, 바뀐 텍스트로 등장함.
-                
-                // (혹시 모를 로딩 멈춤 방지용 안전장치)
-                setTimeout(() => {
-                    if (preloader && preloader.style.display !== 'none') {
-                        preloader.style.display = 'none';
-                        if (window.playHeaderAnimation) window.playHeaderAnimation();
-                    }
-                }, 3500);
             }
         });
     </script>

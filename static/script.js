@@ -1,49 +1,122 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // [변경 1] 헤더 애니메이션을 전역 함수로 정의 (외부에서 호출 가능하게 만듦)
-    // 이제 이 코드는 누군가 부르기 전까지는 실행되지 않습니다.
-    window.playHeaderAnimation = () => {
-        const tl = gsap.timeline();
-        tl.from(".header-text h1", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
-          .from(".header-text p", { y: 30, opacity: 0, duration: 1, delay: 0.3, ease: "power3.out" }, "<")
-          .from(".header-image", { x: 50, opacity: 0, duration: 1, delay: 0.5, ease: "power3.out" }, "<");
+    
+    // ============================================================
+    // [1] 헤더 애니메이션 초기화 & 실행 (Flash 방지 핵심 로직)
+    // ============================================================
+    
+    // 1-1. [초기화] 화면이 보이기 전에 요소들을 미리 안 보이고 내려가 있는 상태로 '강제 고정'합니다.
+    window.initHeaderAnimation = () => {
+        const headerTitle = document.querySelector('.header-text h1');
+        const headerDesc = document.querySelector('.header-text p');
+        const headerVideo = document.querySelector('.header-image');
+
+        if (headerTitle && headerDesc) {
+            // ★ 중요: 애니메이션 시작 전에 미리 상태를 Set 해둡니다. (커튼 뒤 준비)
+            gsap.set([headerTitle, headerDesc], { 
+                autoAlpha: 0, // opacity: 0 + visibility: hidden
+                y: 50         // 아래로 50px 내려둠
+            });
+            
+            if (headerVideo) {
+                gsap.set(headerVideo, { 
+                    autoAlpha: 0, 
+                    x: 50 
+                });
+            }
+        }
     };
 
-    // 1. Lottie 애니메이션 설정 (움직이는 로고)
-    const lottieContainer = document.getElementById('lottie-container');
-    
-    // 로티 컨테이너가 있을 때만 실행 (충돌 방지)
-    if (lottieContainer) {
-        const animation = lottie.loadAnimation({
-            container: lottieContainer, 
-            renderer: 'svg',
-            loop: false, 
-            autoplay: true, 
-            path: 'https://assets3.lottiefiles.com/packages/lf20_UJNc2t.json' 
-        });
-
-        // 2. 애니메이션이 끝나면 커튼 걷어내기 (GSAP)
-        animation.addEventListener('complete', () => {
-            gsap.to("#preloader", {
-                opacity: 0,       
-                duration: 0.8,    
-                ease: "power2.out",
-                onComplete: () => {
-                    document.getElementById("preloader").style.display = "none";
-                    
-                    // [변경 2] 로딩이 끝난 직후, 만들어둔 함수를 여기서 호출!
-                    if (window.playHeaderAnimation) window.playHeaderAnimation();
-                }
+    // 1-2. [실행] 준비된 요소들을 원래 위치로 부드럽게 올립니다.
+    window.playHeaderAnimation = () => {
+        const headerTitle = document.querySelector('.header-text h1');
+        const headerDesc = document.querySelector('.header-text p');
+        const headerVideo = document.querySelector('.header-image');
+        
+        if (headerTitle && headerDesc) {
+            const tl = gsap.timeline();
+            
+            // to()를 사용합니다. (이미 set으로 내려가 있으므로 0으로 올리기만 하면 됨)
+            tl.to([headerTitle, headerDesc], { 
+                autoAlpha: 1, 
+                y: 0, 
+                duration: 1, 
+                ease: "power3.out", 
+                stagger: 0.2 
             });
+
+            if (headerVideo) {
+                tl.to(headerVideo, { 
+                    autoAlpha: 1, 
+                    x: 0, 
+                    duration: 1, 
+                    ease: "power3.out" 
+                }, "<0.2"); // 텍스트보다 살짝 늦게 출발
+            }
+        }
+    };
+
+    // ★ 문서 로드 즉시 초기화 실행 (프리로더 뒤에서 몰래 준비)
+    window.initHeaderAnimation();
+
+
+    // ============================================================
+    // [2] Lottie 로드 & 프리로더 제어
+    // ============================================================
+    const lottieContainer = document.getElementById('lottie-container');
+    const preloader = document.getElementById("preloader");
+
+    function finishLoading() {
+        if (!preloader || preloader.style.display === 'none') return;
+        
+        gsap.to(preloader, {
+            opacity: 0,
+            duration: 0.5,
+            ease: "power2.inOut",
+            onComplete: () => {
+                preloader.style.display = "none";
+                // 프리로더가 완전히 사라진 후 애니메이션 시작 (순차 실행)
+                if (window.playHeaderAnimation) window.playHeaderAnimation();
+            }
         });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const showAnim = urlParams.get('anim');
+
+    if (showAnim === '1' && lottieContainer) {
+        const localPath = '/static/images/intro_animation.json';
+
+        try {
+            const animation = lottie.loadAnimation({
+                container: lottieContainer,
+                renderer: 'svg',
+                loop: false,
+                autoplay: true,
+                path: localPath 
+            });
+
+            animation.addEventListener('complete', finishLoading);
+            
+            animation.addEventListener('data_failed', () => {
+                console.warn("Lottie Fail. Force Start.");
+                finishLoading();
+            });
+            animation.addEventListener('error', () => {
+                console.warn("Lottie Error. Force Start.");
+                finishLoading();
+            });
+
+        } catch (e) {
+            console.error("Lottie Init Error:", e);
+            finishLoading();
+        }
     }
 });
 
-// ==================== [1. Config & Data] ====================
-// GSAP 플러그인 등록
+// ==================== [3] 나머지 기존 로직 (변경 없음) ====================
+// (이 아래부터는 기존 코드 그대로 두시면 됩니다.)
 gsap.registerPlugin(ScrollTrigger);
-
 const categories = ["교육/역량", "취업/창업", "금융/자산", "창업", "복지/건강", "참여/권리"];
-
 function generatePolicyData(count) {
     const data = [];
     for (let i = 1; i <= count; i++) {
@@ -59,44 +132,30 @@ function generatePolicyData(count) {
     }
     return data;
 }
-
 const tinderData = generatePolicyData(10);
 const allSlideData = generatePolicyData(30);
 const myLikedData = generatePolicyData(5);
 
-// ==================== [2. UI Rendering Helpers] ====================
 function createCardHTML(item, isTinder = false) {
-    const isMobile = window.innerWidth <= 768; 
-
     if (isTinder) {
         const cardClass = 'policy-card tinder-card absolute top-0 left-0 w-full h-full flex flex-col bg-white overflow-hidden shadow-xl rounded-[30px] cursor-grab';
-
         const swipeIcons = `
             <div class="swipe-icon left absolute top-1/2 -translate-y-1/2 -left-[100px] w-24 h-24 bg-white rounded-full flex justify-center items-center shadow-lg text-primary-teal z-20 opacity-0 transition-opacity"><i class="fa-solid fa-heart text-4xl"></i></div>
             <div class="swipe-icon right absolute top-1/2 -translate-y-1/2 -right-[100px] w-24 h-24 bg-white rounded-full flex justify-center items-center shadow-lg text-primary-red z-20 opacity-0 transition-opacity"><i class="fa-solid fa-xmark text-4xl"></i></div>
         `;
         const itemData = encodeURIComponent(JSON.stringify(item));
-
         return `
             <div class="${cardClass}" data-id="${item.id}" onclick="openModal('${itemData}')">
                 ${swipeIcons}
-                
                 <div class="card-image w-full h-[320px] bg-gray-50 relative shrink-0">
                     <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover pointer-events-none">
                     <div class="absolute bottom-0 w-full h-20 bg-gradient-to-t from-white to-transparent"></div>
                 </div>
-
                 <div class="card-content flex flex-col justify-between flex-grow p-8 text-left bg-white relative z-10">
                     <div>
-                        <span class="inline-block py-1 px-3 rounded-full bg-orange-50 text-primary-orange text-sm font-bold mb-3 border border-orange-100">
-                            ${item.category}
-                        </span>
-                        <h3 class="card-title text-2xl font-extrabold text-gray-900 leading-tight mb-3 line-clamp-2">
-                            ${item.title}
-                        </h3>
-                        <p class="card-desc text-base text-gray-500 font-medium line-clamp-3 leading-relaxed">
-                            ${item.desc}
-                        </p>
+                        <span class="inline-block py-1 px-3 rounded-full bg-orange-50 text-primary-orange text-sm font-bold mb-3 border border-orange-100">${item.category}</span>
+                        <h3 class="card-title text-2xl font-extrabold text-gray-900 leading-tight mb-3 line-clamp-2">${item.title}</h3>
+                        <p class="card-desc text-base text-gray-500 font-medium line-clamp-3 leading-relaxed">${item.desc}</p>
                     </div>
                     <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                         <span class="card-date text-sm text-gray-400 font-bold"><i class="fa-regular fa-clock mr-1"></i> ${item.date}</span>
@@ -105,13 +164,11 @@ function createCardHTML(item, isTinder = false) {
                 </div>
             </div>
         `;
-    }
-    else {
+    } else {
         const hoverEffects = "transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl hover:bg-white group";
         const baseClass = 'policy-card relative flex flex-col overflow-hidden rounded-[20px] bg-[#F6F6F7] shadow-sm cursor-pointer';
         const cardClass = `${baseClass} ${hoverEffects}`;
         const itemData = encodeURIComponent(JSON.stringify(item));
-
         return `
             <div class="${cardClass}" data-id="${item.id}" onclick="openModal('${itemData}')">
                 <div class="card-image w-full h-[180px] flex items-end justify-center overflow-hidden bg-white">
@@ -129,8 +186,6 @@ function createCardHTML(item, isTinder = false) {
         `;
     }
 }
-
-// ==================== [3. Modal Logic] ====================
 const modal = document.getElementById('policy-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalDesc = document.getElementById('modal-desc');
@@ -139,7 +194,6 @@ const modalCategory = document.getElementById('modal-category');
 const modalDate = document.getElementById('modal-date');
 const modalCloseBtn = document.getElementById('modal-close-btn');
 const modalHeartBtn = document.getElementById('modal-heart-btn');
-
 window.openModal = function (itemDataEncoded) {
     const item = JSON.parse(decodeURIComponent(itemDataEncoded));
     if (modalTitle) modalTitle.innerText = item.title;
@@ -147,7 +201,6 @@ window.openModal = function (itemDataEncoded) {
     if (modalImg) modalImg.src = item.image;
     if (modalCategory) modalCategory.innerText = item.category;
     if (modalDate) modalDate.innerText = item.date;
-
     if (modalHeartBtn) {
         modalHeartBtn.classList.remove('active');
         modalHeartBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
@@ -157,7 +210,6 @@ window.openModal = function (itemDataEncoded) {
         setTimeout(() => { modal.classList.add('active'); }, 10);
     }
 };
-
 function closeModal() {
     if (modal) {
         modal.classList.remove('active');
@@ -166,8 +218,6 @@ function closeModal() {
 }
 if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
 if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-// ==================== [4. Page Specific Logic] ====================
 class CardSwiper {
     constructor(container, data) {
         this.container = container;
@@ -183,14 +233,8 @@ class CardSwiper {
         });
         this.cards = document.querySelectorAll('.tinder-card');
         this.setupEvents();
-
-        // GSAP Animation for Tinder Cards
         gsap.from(".tinder-card", {
-            y: 100,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.1,
-            ease: "back.out(1.7)"
+            y: 100, opacity: 0, duration: 0.8, stagger: 0.1, ease: "back.out(1.7)"
         });
     }
     setupEvents() { this.cards.forEach((card) => { this.addListeners(card); }); }
@@ -238,45 +282,31 @@ class CardSwiper {
         setTimeout(() => { card.remove(); }, 300);
     }
 }
-
 function renderSlide(data) {
     const slideRow1 = document.getElementById('slide-row-1');
     const slideRow2 = document.getElementById('slide-row-2');
     if (!slideRow1 || !slideRow2) return;
-
     const row1Data = data.filter((_, i) => i % 2 === 0);
     const row2Data = data.filter((_, i) => i % 2 !== 0);
     const infiniteRow1 = [...row1Data, ...row1Data, ...row1Data];
     const infiniteRow2 = [...row2Data, ...row2Data, ...row2Data];
-
     slideRow1.innerHTML = infiniteRow1.map(item => createCardHTML(item, false)).join('');
     slideRow2.innerHTML = infiniteRow2.map(item => createCardHTML(item, false)).join('');
-
     const resultMessage = document.getElementById('result-message');
     if (resultMessage) resultMessage.innerText = `추천 정책 (${data.length}건)`;
 }
-
 function renderMyPage() {
     const mypageList = document.getElementById('mypage-list');
     if (!mypageList) return;
-
     if (myLikedData.length === 0) {
         mypageList.innerHTML = `<div class="empty-state"><i class="fa-regular fa-folder-open"></i><p>아직 찜한 정책이 없어요.</p></div>`;
     } else {
         mypageList.innerHTML = myLikedData.map(item => createCardHTML(item, false)).join('');
-
         gsap.from(".policy-grid .policy-card", {
-            y: 50,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            scrollTrigger: {
-                trigger: ".policy-grid",
-                start: "top 80%"
-            }
+            y: 50, opacity: 0, duration: 0.6, stagger: 0.1,
+            scrollTrigger: { trigger: ".policy-grid", start: "top 80%" }
         });
     }
-
     const ctx = document.getElementById('myChart');
     if (ctx) {
         new Chart(ctx, {
@@ -293,109 +323,50 @@ function renderMyPage() {
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: '#eee' },
-                        grid: { color: '#eee' },
-                        pointLabels: {
-                            font: { size: 12, family: 'Pretendard' },
-                            color: '#666'
-                        },
-                        ticks: { display: false, maxTicksLimit: 5 }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
+                responsive: true, maintainAspectRatio: false,
+                scales: { r: { angleLines: { color: '#eee' }, grid: { color: '#eee' }, pointLabels: { font: { size: 12, family: 'Pretendard' }, color: '#666' }, ticks: { display: false, maxTicksLimit: 5 } } },
+                plugins: { legend: { display: false } }
             }
         });
     }
 }
-
-// ==================== [5. Initialization & New Tech] ====================
 document.addEventListener('DOMContentLoaded', () => {
     const lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
-        smooth: true,
-        mouseMultiplier: 1,
-        smoothTouch: false,
-        touchMultiplier: 2,
+        duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), direction: 'vertical', gestureDirection: 'vertical', smooth: true, mouseMultiplier: 1, smoothTouch: false, touchMultiplier: 2,
     });
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
     requestAnimationFrame(raf);
-
-    // [중요 변경] 헤더 애니메이션 자동 실행 코드 삭제함!
-    // 이제 main.html에서 호출하거나 Lottie가 끝나야 실행됨.
-
-    // About 페이지 애니메이션은 그대로 유지
+    
+    // About 페이지 애니메이션
     if (document.querySelector('.about-title')) {
         gsap.from(".about-title", {
             y: 50, opacity: 0, duration: 1, ease: "power3.out"
         });
     }
-
     if (document.querySelector('.team-card')) {
-        gsap.from(".team-card", {
-            y: 100, opacity: 0, duration: 0.8, stagger: 0.2,
-            scrollTrigger: { trigger: ".team-grid", start: "top 80%" }
-        });
+        gsap.from(".team-card", { y: 100, opacity: 0, duration: 0.8, stagger: 0.2, scrollTrigger: { trigger: ".team-grid", start: "top 80%" } });
     }
-
     const tinderList = document.getElementById('tinder-list');
     if (tinderList) new CardSwiper(tinderList, tinderData);
     const guideEl = document.getElementById('swipe-guide');
     const handIcon = document.getElementById('hand-icon');
-
     if (guideEl && handIcon) {
-        const tl = gsap.timeline({
-            paused: true,
-            onComplete: () => { gsap.to(guideEl, { opacity: 0, duration: 0.5 }); }
-        });
-
+        const tl = gsap.timeline({ paused: true, onComplete: () => { gsap.to(guideEl, { opacity: 0, duration: 0.5 }); } });
         tl.fromTo(guideEl, { opacity: 0, x: -30, rotation: -10 }, { opacity: 1, x: 0, rotation: 0, duration: 0.5, ease: "power2.out" })
             .to(handIcon, { x: 40, rotation: 15, duration: 0.8, ease: "power1.inOut" })
             .to(guideEl, { opacity: 0, x: 20, duration: 0.3 }, "+=0.1");
-
-        ScrollTrigger.create({
-            trigger: ".tinder-section",
-            start: "top 60%",
-            onEnter: () => { if (guideEl.style.display !== 'none') { tl.play(); } },
-            once: true
-        });
-
-        const hideGuide = () => {
-            tl.kill();
-            gsap.to(guideEl, {
-                opacity: 0, duration: 0.3, onComplete: () => { guideEl.style.display = 'none'; }
-            });
-        };
-
-        if (tinderList) {
-            tinderList.addEventListener('mousedown', hideGuide);
-            tinderList.addEventListener('touchstart', hideGuide);
-        }
+        ScrollTrigger.create({ trigger: ".tinder-section", start: "top 60%", onEnter: () => { if (guideEl.style.display !== 'none') { tl.play(); } }, once: true });
+        const hideGuide = () => { tl.kill(); gsap.to(guideEl, { opacity: 0, duration: 0.3, onComplete: () => { guideEl.style.display = 'none'; } }); };
+        if (tinderList) { tinderList.addEventListener('mousedown', hideGuide); tinderList.addEventListener('touchstart', hideGuide); }
     }
-
     renderSlide(allSlideData);
-
     const searchBtn = document.getElementById('search-btn');
     const searchInput = document.getElementById('search-input');
     if (searchBtn && searchInput) {
         const handleSearch = () => {
             const keyword = searchInput.value.trim().toLowerCase();
             if (keyword === "") { renderSlide(allSlideData); return; }
-            const filteredData = allSlideData.filter(item =>
-                item.title.toLowerCase().includes(keyword) ||
-                item.category.toLowerCase().includes(keyword)
-            );
+            const filteredData = allSlideData.filter(item => item.title.toLowerCase().includes(keyword) || item.category.toLowerCase().includes(keyword));
             renderSlide(filteredData);
             const resultMessage = document.getElementById('result-message');
             if (resultMessage) resultMessage.innerText = `'${keyword}' 검색 결과 (${filteredData.length}건)`;
@@ -403,23 +374,14 @@ document.addEventListener('DOMContentLoaded', () => {
         searchBtn.addEventListener('click', handleSearch);
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(); });
     }
-
     renderMyPage();
-
     const btnSignup = document.getElementById('btn-signup');
     const signupModal = document.getElementById('signup-modal');
     if (btnSignup && signupModal) {
-        btnSignup.addEventListener('click', () => {
-            signupModal.classList.remove('hidden');
-            setTimeout(() => { signupModal.classList.add('active'); }, 10);
-        });
-        window.closeSignupModal = function () {
-            signupModal.classList.remove('active');
-            setTimeout(() => { signupModal.classList.add('hidden'); }, 300);
-        }
+        btnSignup.addEventListener('click', () => { signupModal.classList.remove('hidden'); setTimeout(() => { signupModal.classList.add('active'); }, 10); });
+        window.closeSignupModal = function () { signupModal.classList.remove('active'); setTimeout(() => { signupModal.classList.add('hidden'); }, 300); }
         signupModal.addEventListener('click', (e) => { if (e.target === signupModal) closeSignupModal(); });
     }
-
     const btnShare = document.getElementById('btn-share');
     const shareModal = document.getElementById('share-modal');
     if (btnShare && shareModal) {
@@ -436,10 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.copyUrl = function () {
             const shareUrlInput = document.getElementById('share-url-input');
             shareUrlInput.select();
-            navigator.clipboard.writeText(shareUrlInput.value).then(() => {
-                alert("URL이 복사되었습니다!");
-                closeShareModal();
-            });
+            navigator.clipboard.writeText(shareUrlInput.value).then(() => { alert("URL이 복사되었습니다!"); closeShareModal(); });
         }
         shareModal.addEventListener('click', (e) => { if (e.target === shareModal) closeShareModal(); });
     }
