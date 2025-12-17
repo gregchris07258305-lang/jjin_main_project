@@ -1,29 +1,41 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Lottie 애니메이션 설정 (움직이는 로고)
-    const animation = lottie.loadAnimation({
-        container: document.getElementById('lottie-container'), // 보여질 박스
-        renderer: 'svg',
-        loop: false, // 한 번만 재생하고 멈춤 (계속 돌게 하려면 true)
-        autoplay: true, // 자동 재생
-        // [중요] 디자이너님이 만든 json 파일 경로를 넣거나, 테스트용 무료 json 주소를 넣으세요
-        path: 'https://assets3.lottiefiles.com/packages/lf20_UJNc2t.json' 
-    });
+    // [변경 1] 헤더 애니메이션을 전역 함수로 정의 (외부에서 호출 가능하게 만듦)
+    // 이제 이 코드는 누군가 부르기 전까지는 실행되지 않습니다.
+    window.playHeaderAnimation = () => {
+        const tl = gsap.timeline();
+        tl.from(".header-text h1", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
+          .from(".header-text p", { y: 30, opacity: 0, duration: 1, delay: 0.3, ease: "power3.out" }, "<")
+          .from(".header-image", { x: 50, opacity: 0, duration: 1, delay: 0.5, ease: "power3.out" }, "<");
+    };
 
-    // 2. 애니메이션이 끝나면 커튼 걷어내기 (GSAP)
-    animation.addEventListener('complete', () => {
-        gsap.to("#preloader", {
-            opacity: 0,       // 투명해지면서
-            duration: 0.8,    // 0.8초 동안
-            ease: "power2.out",
-            onComplete: () => {
-                // 애니메이션 끝나면 아예 화면에서 없애버리기 (클릭 방해 안 되게)
-                document.getElementById("preloader").style.display = "none";
-                
-                // [선택] 이때 메인 텍스트가 쓱 올라오게 하면 더 멋짐!
-                gsap.from(".header-text", { y: 50, opacity: 0, duration: 1 });
-            }
+    // 1. Lottie 애니메이션 설정 (움직이는 로고)
+    const lottieContainer = document.getElementById('lottie-container');
+    
+    // 로티 컨테이너가 있을 때만 실행 (충돌 방지)
+    if (lottieContainer) {
+        const animation = lottie.loadAnimation({
+            container: lottieContainer, 
+            renderer: 'svg',
+            loop: false, 
+            autoplay: true, 
+            path: 'https://assets3.lottiefiles.com/packages/lf20_UJNc2t.json' 
         });
-    });
+
+        // 2. 애니메이션이 끝나면 커튼 걷어내기 (GSAP)
+        animation.addEventListener('complete', () => {
+            gsap.to("#preloader", {
+                opacity: 0,       
+                duration: 0.8,    
+                ease: "power2.out",
+                onComplete: () => {
+                    document.getElementById("preloader").style.display = "none";
+                    
+                    // [변경 2] 로딩이 끝난 직후, 만들어둔 함수를 여기서 호출!
+                    if (window.playHeaderAnimation) window.playHeaderAnimation();
+                }
+            });
+        });
+    }
 });
 
 // ==================== [1. Config & Data] ====================
@@ -54,11 +66,9 @@ const myLikedData = generatePolicyData(5);
 
 // ==================== [2. UI Rendering Helpers] ====================
 function createCardHTML(item, isTinder = false) {
-    const isMobile = window.innerWidth <= 768; // 모바일 체크
+    const isMobile = window.innerWidth <= 768; 
 
-    // [Tinder 카드일 때]
     if (isTinder) {
-        // 1. 카드 전체 스타일 (기존과 동일하지만 크기 대응)
         const cardClass = 'policy-card tinder-card absolute top-0 left-0 w-full h-full flex flex-col bg-white overflow-hidden shadow-xl rounded-[30px] cursor-grab';
 
         const swipeIcons = `
@@ -96,8 +106,6 @@ function createCardHTML(item, isTinder = false) {
             </div>
         `;
     }
-
-    // [일반 카드일 때 (My Page, Slide 등)] - 기존 유지
     else {
         const hoverEffects = "transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl hover:bg-white group";
         const baseClass = 'policy-card relative flex flex-col overflow-hidden rounded-[20px] bg-[#F6F6F7] shadow-sm cursor-pointer';
@@ -160,7 +168,6 @@ if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
 if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
 // ==================== [4. Page Specific Logic] ====================
-// --- Main Page Logic ---
 class CardSwiper {
     constructor(container, data) {
         this.container = container;
@@ -177,7 +184,7 @@ class CardSwiper {
         this.cards = document.querySelectorAll('.tinder-card');
         this.setupEvents();
 
-        // GSAP Animation for Tinder Cards (등장 효과)
+        // GSAP Animation for Tinder Cards
         gsap.from(".tinder-card", {
             y: 100,
             opacity: 0,
@@ -249,7 +256,6 @@ function renderSlide(data) {
     if (resultMessage) resultMessage.innerText = `추천 정책 (${data.length}건)`;
 }
 
-// --- My Page Logic ---
 function renderMyPage() {
     const mypageList = document.getElementById('mypage-list');
     if (!mypageList) return;
@@ -259,7 +265,6 @@ function renderMyPage() {
     } else {
         mypageList.innerHTML = myLikedData.map(item => createCardHTML(item, false)).join('');
 
-        // GSAP for My Page Grid (순차 등장)
         gsap.from(".policy-grid .policy-card", {
             y: 50,
             opacity: 0,
@@ -272,7 +277,6 @@ function renderMyPage() {
         });
     }
 
-    // Chart.js Implementation
     const ctx = document.getElementById('myChart');
     if (ctx) {
         new Chart(ctx, {
@@ -282,7 +286,7 @@ function renderMyPage() {
                 datasets: [{
                     label: '나의 관심도',
                     data: [85, 90, 70, 60, 40, 50],
-                    backgroundColor: 'rgba(244, 130, 69, 0.2)', // brand orange transparent
+                    backgroundColor: 'rgba(244, 130, 69, 0.2)',
                     borderColor: '#F48245',
                     pointBackgroundColor: '#F48245',
                     borderWidth: 2
@@ -312,7 +316,6 @@ function renderMyPage() {
 
 // ==================== [5. Initialization & New Tech] ====================
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Lenis Smooth Scroll Init
     const lenis = new Lenis({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -329,92 +332,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     requestAnimationFrame(raf);
 
-    // 2. GSAP Global Animations
-    // Header Text Animation (Main, MyPage, About 공통 적용)
-    gsap.from(".header-text h1", { y: 50, opacity: 0, duration: 1, ease: "power3.out" });
-    gsap.from(".header-text p", { y: 30, opacity: 0, duration: 1, delay: 0.3, ease: "power3.out" });
-    gsap.from(".header-image", { x: 50, opacity: 0, duration: 1, delay: 0.5, ease: "power3.out" });
+    // [중요 변경] 헤더 애니메이션 자동 실행 코드 삭제함!
+    // 이제 main.html에서 호출하거나 Lottie가 끝나야 실행됨.
 
-    // [추가할 코드] About 페이지 타이틀 애니메이션
+    // About 페이지 애니메이션은 그대로 유지
     if (document.querySelector('.about-title')) {
         gsap.from(".about-title", {
-            y: 50,           // 아래로 50px 내려가 있다가 올라옴
-            opacity: 0,      // 투명 상태에서 시작
-            duration: 1,     // 1초 동안 재생
-            ease: "power3.out" // 부드러운 감속 효과
+            y: 50, opacity: 0, duration: 1, ease: "power3.out"
         });
     }
 
-    // About Page Team Animation
     if (document.querySelector('.team-card')) {
         gsap.from(".team-card", {
-            y: 100,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.2,
-            scrollTrigger: {
-                trigger: ".team-grid",
-                start: "top 80%"
-            }
+            y: 100, opacity: 0, duration: 0.8, stagger: 0.2,
+            scrollTrigger: { trigger: ".team-grid", start: "top 80%" }
         });
     }
 
-    // 3. Existing Logic Init
     const tinderList = document.getElementById('tinder-list');
     if (tinderList) new CardSwiper(tinderList, tinderData);
     const guideEl = document.getElementById('swipe-guide');
     const handIcon = document.getElementById('hand-icon');
 
     if (guideEl && handIcon) {
-        // 1. 애니메이션 정의 (왼쪽 -> 오른쪽 스와이프 모션)
         const tl = gsap.timeline({
-            paused: true, // 스크롤 도달 전까지 멈춤
-            onComplete: () => {
-                // 3회 반복 후 자연스럽게 사라짐
-                gsap.to(guideEl, { opacity: 0, duration: 0.5 });
-            }
+            paused: true,
+            onComplete: () => { gsap.to(guideEl, { opacity: 0, duration: 0.5 }); }
         });
 
-        tl.fromTo(guideEl,
-            { opacity: 0, x: -30, rotation: -10 }, // 시작: 약간 왼쪽, 투명, 살짝 회전
-            { opacity: 1, x: 0, rotation: 0, duration: 0.5, ease: "power2.out" } // 등장
-        )
-            .to(handIcon, {
-                x: 40,      // 오른쪽으로 밈
-                rotation: 15, // 손목 회전 효과
-                duration: 0.8,
-                ease: "power1.inOut"
-            })
-            .to(guideEl, {
-                opacity: 0, // 끝날 때 투명해짐
-                x: 20,
-                duration: 0.3
-            }, "+=0.1"); // 약간 대기 후 사라짐
+        tl.fromTo(guideEl, { opacity: 0, x: -30, rotation: -10 }, { opacity: 1, x: 0, rotation: 0, duration: 0.5, ease: "power2.out" })
+            .to(handIcon, { x: 40, rotation: 15, duration: 0.8, ease: "power1.inOut" })
+            .to(guideEl, { opacity: 0, x: 20, duration: 0.3 }, "+=0.1");
 
-        // 2. 스크롤 트리거: 틴더 섹션이 화면에 보이면 재생
         ScrollTrigger.create({
             trigger: ".tinder-section",
-            start: "top 60%", // 섹션이 화면 중간쯤 왔을 때
-            onEnter: () => {
-                // 사용자가 아직 액션을 안 했다면 재생
-                if (guideEl.style.display !== 'none') {
-                    tl.play();
-                }
-            },
-            once: true // 한 번만 실행 (스크롤 왔다갔다 해도 다시 안 뜸)
+            start: "top 60%",
+            onEnter: () => { if (guideEl.style.display !== 'none') { tl.play(); } },
+            once: true
         });
 
-        // 3. 사용자 액션 감지: 클릭/터치 시 즉시 숨김
         const hideGuide = () => {
-            tl.kill(); // 애니메이션 중단
+            tl.kill();
             gsap.to(guideEl, {
-                opacity: 0, duration: 0.3, onComplete: () => {
-                    guideEl.style.display = 'none'; // 완전히 제거
-                }
+                opacity: 0, duration: 0.3, onComplete: () => { guideEl.style.display = 'none'; }
             });
         };
 
-        // 카드를 누르거나 스와이프 시도하면 가이드 삭제
         if (tinderList) {
             tinderList.addEventListener('mousedown', hideGuide);
             tinderList.addEventListener('touchstart', hideGuide);
@@ -441,11 +404,8 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(); });
     }
 
-
-
     renderMyPage();
 
-    // Modals (Signup/Share)
     const btnSignup = document.getElementById('btn-signup');
     const signupModal = document.getElementById('signup-modal');
     if (btnSignup && signupModal) {
@@ -484,202 +444,3 @@ document.addEventListener('DOMContentLoaded', () => {
         shareModal.addEventListener('click', (e) => { if (e.target === shareModal) closeShareModal(); });
     }
 });
-// ==================== [6. New Logic: Region Filter & Transition] ====================
-// landing.html에서 넘어온 ?region=seoul 파라미터를 처리합니다.
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // 1. URL에서 region 파라미터 추출
-    const urlParams = new URLSearchParams(window.location.search);
-    const regionId = urlParams.get('region'); // 예: 'seoul'
-
-    // 2. 화면 진입 애니메이션 (Landing 페이지의 줌인 효과와 이어지도록)
-    // body 전체가 하얀색(투명도 0)에서 서서히 나타나게 함
-    gsap.fromTo("body", 
-        { opacity: 0 }, 
-        { opacity: 1, duration: 1.2, ease: "power2.out" }
-    );
-
-    // 3. 지역 ID 한글 매핑 데이터
-    const REGION_NAMES = {
-        'seoul': '서울특별시', 'gangwon': '강원도', 
-        'chungbug': '충청북도', 'chungnam': '충청남도',
-        'jeonbug': '전라북도', 'jeonnam': '전라남도',
-        'gyeongbug': '경상북도', 'gyeongnam': '경상남도',
-        'jeju': '제주특별자치도'
-    };
-
-    // 4. 지역 정보가 있을 경우 UI 업데이트 실행
-    if (regionId && REGION_NAMES[regionId]) {
-        const regionName = REGION_NAMES[regionId];
-        console.log(`Connected Region: ${regionName}`);
-
-        // [Header Text 수정]
-        const headerTitle = document.querySelector('.header-text h1');
-        const headerDesc = document.querySelector('.header-text p');
-        
-        if(headerTitle) {
-            // 기존 텍스트가 살짝 사라졌다가, 새로운 지역명으로 바뀌며 등장
-            gsap.to(headerTitle, {
-                opacity: 0,
-                y: -10,
-                duration: 0.3,
-                onComplete: () => {
-                    headerTitle.innerHTML = `<span class="text-primary-teal">${regionName}</span>의<br>청년 정책 소식 📰`;
-                    gsap.to(headerTitle, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.7)" });
-                }
-            });
-        }
-        
-        if(headerDesc) {
-            gsap.to(headerDesc, {
-                opacity: 0,
-                duration: 0.3,
-                onComplete: () => {
-                    headerDesc.innerHTML = `${regionName}에 거주하는 청년들을 위한 맞춤 정책입니다.<br>놓치지 말고 확인해보세요!`;
-                    gsap.to(headerDesc, { opacity: 1, duration: 0.5, delay: 0.1 });
-                }
-            });
-        }
-
-        // [Search Input 자동 입력]
-        // 사용자가 검색창을 봤을 때 해당 지역이 이미 태그되어 있는 느낌 제공
-        const searchInput = document.getElementById('search-input');
-        if(searchInput) {
-            searchInput.value = `#${regionName} #취업지원`;
-        }
-    }
-});
-
-// =========================================================================
-        // [수정된 버전] 맵 이벤트 초기화 함수 (디버깅 강화 및 path 지원)
-        // =========================================================================
-        function initMapEvents() {
-            const svgElement = document.querySelector('#svg-container svg');
-            if (!svgElement) {
-                console.error("❌ SVG 요소를 찾을 수 없습니다.");
-                return;
-            }
-
-            const tooltip = document.querySelector('#info-tooltip');
-            const tooltipLine = tooltip.querySelector('.tooltip-line');
-            const tooltipContent = tooltip.querySelector('.tooltip-content');
-            const tTitle = tooltip.querySelector('.tooltip-title');
-            const tCountSpan = tooltip.querySelector('.tooltip-count span');
-            const overlay = document.getElementById('transition-overlay');
-
-            // [핵심 수정 1] g 태그뿐만 아니라 path 태그도 검사 대상에 포함
-            // 어떤 툴은 그룹에 ID를 주고, 어떤 툴은 패스에 ID를 줍니다. 둘 다 찾습니다.
-            const allElements = svgElement.querySelectorAll('g, path');
-            
-            // 현재 활성화해야 할 ID 목록 (데이터베이스 키값들)
-            const activeIds = Object.keys(currentConfig.db);
-            
-            console.log(`[InitMap] 현재 모드: ${currentRegionKey}`);
-            console.log(`[InitMap] 활성 타겟 ID 목록:`, activeIds);
-
-            let matchCount = 0;
-
-            allElements.forEach(element => {
-                const rawId = element.id || '';
-                if (!rawId) return; // ID가 없는 요소는 무시
-
-                const regionId = rawId.trim(); // 공백 제거
-
-                // 1. 랜드마크 처리
-                if (regionId.toLowerCase().includes('lm')) {
-                    element.classList.add('landmark-piece');
-                    // 랜드마크는 별도 이벤트 로직 (필요시 추가)
-                    return; 
-                }
-
-                // 2. 활성 영역 매칭 확인
-                if (activeIds.includes(regionId)) {
-                    matchCount++;
-                    console.log(`✅ 매칭 성공: ${regionId} (태그: ${element.tagName})`);
-
-                    element.classList.add('puzzle-piece');
-
-                    // [Hover Event]
-                    element.addEventListener('mouseenter', function() {
-                        // z-index 상위로 올리기 (path는 appendChild로 순서 변경 시 깨질 수 있으니 주의)
-                        // 그룹(g)일 경우에만 순서 변경 시도
-                        if(this.tagName.toLowerCase() === 'g') {
-                            this.parentNode.appendChild(this);
-                        }
-                        
-                        const data = currentConfig.db[regionId] || { name: 'Unknown', count: 0 };
-                        tTitle.innerText = data.name;
-                        tCountSpan.innerText = data.count.toLocaleString();
-
-                        const rect = element.getBoundingClientRect();
-                        tooltip.style.display = 'flex';
-                        
-                        // 툴팁 위치 계산 로직
-                        let isLeft = false;
-                        if(currentRegionKey === 'national') {
-                            isLeft = (currentConfig.leftSideIds || []).includes(regionId);
-                        } else {
-                            isLeft = (rect.left + rect.width/2) < (window.innerWidth / 2);
-                        }
-                        
-                        if (isLeft) {
-                            tooltip.style.flexDirection = 'row-reverse';
-                            tooltipLine.style.marginRight = '0px'; tooltipLine.style.marginLeft = '10px'; tooltipLine.style.transformOrigin = 'right center';
-                            tooltipContent.style.alignItems = 'flex-end';
-                            const startX = rect.left + (rect.width * 0.2); const startY = rect.top + (rect.height * 0.3);
-                            tooltip.style.left = 'auto'; tooltip.style.right = `${window.innerWidth - startX}px`; tooltip.style.top = `${startY}px`;
-                        } else {
-                            tooltip.style.flexDirection = 'row';
-                            tooltipLine.style.marginRight = '10px'; tooltipLine.style.marginLeft = '0px'; tooltipLine.style.transformOrigin = 'left center';
-                            tooltipContent.style.alignItems = 'flex-start';
-                            const startX = rect.right - (rect.width * 0.2); const startY = rect.top + (rect.height * 0.3);
-                            tooltip.style.right = 'auto'; tooltip.style.left = `${startX}px`; tooltip.style.top = `${startY}px`;
-                        }
-
-                        if (tooltipTimeline) tooltipTimeline.kill();
-                        tooltipTimeline = gsap.timeline();
-                        tooltipTimeline.set(tooltipLine, { width: 0 }).set(tooltipContent, { opacity: 0, y: 10 })
-                            .to(tooltipLine, { width: 80, duration: 0.4, ease: "power2.out" })
-                            .to(tooltipContent, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }, "-=0.2");
-                    });
-
-                    // [Leave Event]
-                    element.addEventListener('mouseleave', function() {
-                        if (tooltipTimeline) tooltipTimeline.kill();
-                        tooltip.style.display = 'none';
-                    });
-
-                    // [Click Event]
-                    element.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        tooltip.style.display = 'none';
-
-                        if (!isDetailMode) {
-                            // 전국 -> 상세 이동
-                             gsap.timeline()
-                                .to(element, { scale: 1.2, duration: 0.2, ease: "back.in(2)", zIndex: 100 }) 
-                                .to("#svg-container", { scale: 5, opacity: 0, duration: 0.8, ease: "power4.in" })
-                                .to(overlay, { opacity: 1, duration: 0.5 }, "<0.3")
-                                .to({}, { onComplete: () => { 
-                                    window.location.search = `?region=${regionId}`; 
-                                } });
-                        } else {
-                            // 상세 -> 뉴스 등 이동
-                            alert(`${currentConfig.db[regionId].name} 상세 페이지로 이동합니다. (구현 예정)`);
-                        }
-                    });
-                } else {
-                    // 매칭되지 않는 요소 (배경 등)
-                    // 단, ID가 있는 경우에만 disabled 처리를 하여 불필요한 요소 간섭 최소화
-                    if (rawId) {
-                         element.classList.add('region-disabled');
-                    }
-                }
-            });
-
-            if (matchCount === 0) {
-                console.warn("⚠️ 경고: 데이터와 매칭된 SVG 요소가 하나도 없습니다. SVG 파일의 ID를 확인하세요.");
-                console.log("힌트: 일러스트레이터 레이어 이름이 'detail_busan' 등으로 정확히 설정되었는지 확인하세요.");
-            }
-        }
-        

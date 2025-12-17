@@ -49,7 +49,7 @@
         .region-disabled { pointer-events: none; opacity: 0.5; }
         .region-disabled path, path.region-disabled { fill: #eeeeee; stroke: #dddddd; filter: none; }
 
-        /* [4] UI 요소 (툴팁) */
+        /* [4] UI 요소 */
         #info-tooltip { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 100; display: none; align-items: center; }
         .tooltip-line { height: 1px; background-color: #4A9EA8; box-shadow: 0 0 5px #4A9EA8; }
         .tooltip-content { display: flex; flex-direction: column; opacity: 0; }
@@ -68,6 +68,7 @@
             background-color: #f9fafb;
             outline: none;
             transition: all 0.2s ease;
+            font-size: 1rem;
         }
         .auth-input:focus {
             background-color: #fff;
@@ -140,29 +141,61 @@
                     </svg>
                 </div>
                 
-                <h2 id="auth-title" class="text-2xl font-bold text-gray-900 mb-2"></h2>
-                <p id="auth-desc" class="text-gray-500 text-sm mb-8 leading-relaxed"></p>
+                <h2 id="auth-promo-title" class="text-2xl font-bold text-gray-900 mb-2"></h2>
+                <p id="auth-promo-desc" class="text-gray-500 text-sm mb-8 leading-relaxed"></p>
 
                 <div class="space-y-3 w-full">
-                    <button id="btn-modal-signup-trigger" class="w-full py-3.5 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5">
+                    <button id="btn-promo-signup" class="w-full py-3.5 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5">
                         3초 만에 가입하고 보기 🚀
                     </button>
-                    <button id="btn-switch-to-login" class="w-full py-3.5 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                    <button id="btn-promo-login" class="w-full py-3.5 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
                         로그인
                     </button>
                 </div>
             </div>
 
-            <div id="auth-view-login" class="hidden flex-col items-center text-center transition-all duration-300">
+            <div id="auth-view-signup" class="hidden flex-col items-center text-center transition-all duration-300">
                 <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#4A9EA8]" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 2a1 1 0 00-1 1v1a1 1 0 01-1 1H7a1 1 0 01-1-1V3a1 1 0 00-1-1H4a2 2 0 00-2 2v15a2 2 0 002 2h16a2 2 0 002-2V4a2 2 0 00-2-2h-1a1 1 0 00-1 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V3a1 1 0 00-1-1h-3z" opacity="0.2"/>
-                        <path fill-rule="evenodd" d="M13.5 19.5h-9a1.5 1.5 0 01-1.5-1.5v-9a1.5 1.5 0 011.5-1.5h9a1.5 1.5 0 011.5 1.5v9a1.5 1.5 0 01-1.5 1.5zM12 15a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#4A9EA8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">내 구역 설정</h2>
+                
+                <div class="mb-6 inline-flex items-center gap-1.5 px-3 py-1 bg-teal-50 text-[#4A9EA8] rounded-full text-xs font-bold border border-teal-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    <span id="signup-region-badge">지역명</span>
+                </div>
+
+                <div class="w-full space-y-3 mb-6">
+                    <input type="text" id="signup-id" placeholder="사용할 아이디" class="auth-input">
+                    
+                    <div class="relative w-full">
+                        <input type="password" id="signup-pw" placeholder="비밀번호 (4자리 이상)" class="auth-input pr-10">
+                        <button id="btn-toggle-pw" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#4A9EA8] p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="btn-signup-submit" class="w-full py-3.5 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5">
+                    설정 완료하고 혜택 보기
+                </button>
+            </div>
+
+            <div id="auth-view-login" class="hidden flex-col items-center text-center transition-all duration-300">
+                <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3zM3 12a9 9 0 1018 0v-7.5H12a9 9 0 00-9 9z" clip-rule="evenodd" />
                     </svg>
                 </div>
                 
                 <h2 class="text-2xl font-bold text-gray-900 mb-2">환영합니다!</h2>
-                <p class="text-gray-500 text-sm mb-6">설정해둔 내 구역으로 빠르게 이동하세요.</p>
+                <p class="text-gray-500 text-sm mb-6">기존 계정으로 로그인하세요.</p>
 
                 <div class="w-full space-y-3 mb-6">
                     <input type="text" id="login-id" placeholder="아이디" class="auth-input">
@@ -170,18 +203,17 @@
                 </div>
 
                 <div class="space-y-3 w-full">
-                    <button id="btn-login-submit" class="w-full py-3.5 bg-[#4A9EA8] hover:bg-[#3b858e] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                        <span>로그인</span>
-                    </button>
-                    <button id="btn-switch-to-promo" class="w-full py-3.5 text-gray-400 text-sm hover:text-gray-600 underline decoration-gray-300">
-                        아직 계정이 없으신가요?
+                    <button id="btn-login-submit" class="w-full py-3.5 bg-gray-800 hover:bg-black text-white font-bold rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
+                        로그인
                     </button>
                 </div>
             </div>
             
-            <button id="btn-modal-browse" class="mt-6 text-xs text-gray-400 font-medium w-full text-center hover:text-[#4A9EA8] transition-colors">
-                오늘은 그냥 둘러보기 &rarr;
-            </button>
+            <div id="modal-footer" class="mt-6 text-center">
+                 <button id="btn-modal-browse" class="text-xs text-gray-400 font-medium hover:text-[#4A9EA8] transition-colors underline">
+                    오늘은 그냥 둘러보기
+                </button>
+            </div>
         </div>
     </div>
 
@@ -213,7 +245,7 @@
     </div>
 
     <script>
-        // ... (이전과 동일한 데이터 설정) ...
+        // ... (데이터 설정 동일) ...
         const REGION_DATA = {
             'national': {
                 mapPath: '/static/images/map.svg',
@@ -297,29 +329,40 @@
             
             // Views
             viewPromo: document.getElementById('auth-view-promo'),
+            viewSignup: document.getElementById('auth-view-signup'),
             viewLogin: document.getElementById('auth-view-login'),
             
-            // Elements in Promo View
-            title: document.getElementById('auth-title'),
-            desc: document.getElementById('auth-desc'),
-            btnSignupTrigger: document.getElementById('btn-modal-signup-trigger'),
-            btnSwitchToLogin: document.getElementById('btn-switch-to-login'),
+            // Promo Elements
+            promoTitle: document.getElementById('auth-promo-title'),
+            promoDesc: document.getElementById('auth-promo-desc'),
+            btnPromoSignup: document.getElementById('btn-promo-signup'),
+            btnPromoLogin: document.getElementById('btn-promo-login'),
             
-            // Elements in Login View
-            inputID: document.getElementById('login-id'),
-            inputPW: document.getElementById('login-pw'),
+            // Signup Elements
+            signupRegionBadge: document.getElementById('signup-region-badge'),
+            signupID: document.getElementById('signup-id'),
+            signupPW: document.getElementById('signup-pw'),
+            btnTogglePW: document.getElementById('btn-toggle-pw'),
+            btnSignupSubmit: document.getElementById('btn-signup-submit'),
+
+            // Login Elements
+            loginID: document.getElementById('login-id'),
+            loginPW: document.getElementById('login-pw'),
             btnLoginSubmit: document.getElementById('btn-login-submit'),
-            btnSwitchToPromo: document.getElementById('btn-switch-to-promo'),
-            
+
             // Common
             btnBrowse: document.getElementById('btn-modal-browse'),
             btnCloseIcon: document.getElementById('btn-modal-close-icon'),
             
             // State
+            targetRegionName: '',
+            targetRegionId: '',
             targetCallback: null,
 
-            // 모달 열기 (기본적으로 Promo 뷰를 먼저 보여줌, startMode로 변경 가능)
-            show: function(regionName, count, navigateCallback, startMode = 'promo') {
+            // 모달 열기
+            show: function(regionName, regionId, count, navigateCallback, startMode = 'promo') {
+                this.targetRegionName = regionName || '';
+                this.targetRegionId = regionId || '';
                 this.targetCallback = navigateCallback;
                 this.el.classList.remove('hidden');
                 
@@ -327,71 +370,107 @@
                 gsap.to(this.el, { opacity: 1, duration: 0.3 });
                 gsap.to(this.content, { scale: 1, duration: 0.3, ease: 'back.out(1.2)' });
 
-                // 데이터 바인딩
+                // 데이터 바인딩 (Promo)
                 if(regionName) {
-                    this.title.innerHTML = `<span class="text-[#4A9EA8]">${regionName}</span> 소식을<br>받아보시겠습니까?`;
-                    this.desc.innerHTML = `총 ${count.toLocaleString()}건의 청년 정책을<br>놓치지 말고 확인하세요.`;
+                    this.promoTitle.innerHTML = `<span class="text-[#4A9EA8]">${regionName}</span> 소식을<br>받아보시겠습니까?`;
+                    this.promoDesc.innerHTML = `총 ${count.toLocaleString()}건의 청년 정책을<br>놓치지 말고 확인하세요.`;
+                    
+                    // 데이터 바인딩 (Signup)
+                    this.signupRegionBadge.innerText = regionName;
                 }
 
                 // 뷰 초기화
                 this.switchView(startMode);
-                
-                // 이벤트 바인딩
                 this.bindEvents();
             },
 
             switchView: function(mode) {
+                // 모든 뷰 숨김
+                this.viewPromo.classList.add('hidden', 'flex'); this.viewPromo.classList.remove('flex');
+                this.viewSignup.classList.add('hidden', 'flex'); this.viewSignup.classList.remove('flex');
+                this.viewLogin.classList.add('hidden', 'flex'); this.viewLogin.classList.remove('flex');
+                this.btnBrowse.classList.remove('hidden'); // 기본은 보임
+
                 if (mode === 'login') {
-                    this.viewPromo.classList.add('hidden');
                     this.viewLogin.classList.remove('hidden');
                     this.viewLogin.classList.add('flex');
-                    this.inputID.focus();
+                    this.btnBrowse.classList.add('hidden'); // 로그인창에선 둘러보기 숨김 (선택사항)
+                    this.loginID.focus();
+                } else if (mode === 'signup') {
+                    this.viewSignup.classList.remove('hidden');
+                    this.viewSignup.classList.add('flex');
+                    this.signupID.focus();
                 } else {
-                    this.viewLogin.classList.add('hidden');
-                    this.viewLogin.classList.remove('flex');
+                    // Promo (Default)
                     this.viewPromo.classList.remove('hidden');
                 }
             },
             
             bindEvents: function() {
-                // 1. Promo -> Login 전환
-                this.btnSwitchToLogin.onclick = () => this.switchView('login');
+                // 1. Promo -> Signup
+                this.btnPromoSignup.onclick = () => this.switchView('signup');
                 
-                // 2. Login -> Promo 전환
-                this.btnSwitchToPromo.onclick = () => this.switchView('promo');
+                // 2. Promo -> Login
+                this.btnPromoLogin.onclick = () => this.switchView('login');
 
-                // 3. 빠른 가입 (시뮬레이션)
-                this.btnSignupTrigger.onclick = () => {
-                    this.completeAuth("가입이 완료되었습니다!");
+                // 3. Signup: 비밀번호 보기 토글
+                this.btnTogglePW.onclick = () => {
+                    const type = this.signupPW.getAttribute('type') === 'password' ? 'text' : 'password';
+                    this.signupPW.setAttribute('type', type);
+                    // 아이콘 변경 로직 (간단히 opacity 조절 등으로 대체 가능하나 여기선 기능만)
                 };
 
-                // 4. 로그인 제출 (데이터 전송 시뮬레이션)
-                this.btnLoginSubmit.onclick = () => {
-                    const id = this.inputID.value;
-                    const pw = this.inputPW.value;
+                // 4. Signup: 제출 (가입)
+                this.btnSignupSubmit.onclick = () => {
+                    const id = this.signupID.value;
+                    const pw = this.signupPW.value;
+                    
                     if(!id || !pw) {
                         alert("아이디와 비밀번호를 입력해주세요.");
                         return;
                     }
-                    // TODO: 여기서 DB 담당자가 만들어준 API로 전송
-                    console.log(`[Send to DB] ID: ${id}, PW: ${pw}`); 
+                    if(pw.length < 4) {
+                        alert("비밀번호는 4자리 이상이어야 합니다.");
+                        return;
+                    }
+
+                    // ★ 백엔드 전송 시뮬레이션
+                    const payload = {
+                        username: id,
+                        password: pw,
+                        my_region: this.targetRegionId
+                    };
+                    console.log("[Signup API Request]", payload);
+
+                    this.completeAuth(`${this.targetRegionName} 구역 설정이 완료되었습니다!`);
+                };
+
+                // 5. Login: 제출 (로그인)
+                this.btnLoginSubmit.onclick = () => {
+                    const id = this.loginID.value;
+                    const pw = this.loginPW.value;
+                    if(!id || !pw) {
+                        alert("정보를 입력해주세요.");
+                        return;
+                    }
+                    // ★ 로그인 API 전송 시뮬레이션
+                    console.log("[Login API Request]", {username: id, password: pw});
                     this.completeAuth("로그인 되었습니다.");
                 };
 
-                // 5. 둘러보기 (비로그인 이동)
+                // 6. 둘러보기 (비로그인 이동)
                 this.btnBrowse.onclick = () => {
                     this.hide();
-                    // 비로그인 상태로 콜백 실행
                     if(this.targetCallback) this.targetCallback();
                 };
 
-                // 6. 닫기
+                // 7. 닫기
                 this.btnCloseIcon.onclick = () => this.hide();
             },
 
             completeAuth: function(msg) {
                 this.hide();
-                alert(msg); // 실제로는 토스트 메시지 추천
+                alert(msg); // 실제로는 토스트 메시지로 대체 권장
                 sessionStorage.setItem('sseuk_logged_in', 'true');
                 isLoggedIn = true;
                 if(this.targetCallback) this.targetCallback();
@@ -402,8 +481,9 @@
                 gsap.to(this.content, { scale: 0.95, duration: 0.2, onComplete: () => {
                     this.el.classList.add('hidden');
                     // Input 초기화
-                    this.inputID.value = "";
-                    this.inputPW.value = "";
+                    this.signupID.value = ""; this.signupPW.value = "";
+                    this.loginID.value = ""; this.loginPW.value = "";
+                    this.signupPW.setAttribute('type', 'password'); // PW 모드 복구
                 }});
             }
         };
@@ -489,7 +569,7 @@
                         const data = currentConfig.db[regionId];
                         const hasDetailMap = REGION_DATA.hasOwnProperty(regionId);
 
-                        // 1. 전국 지도 & 상세 지도 있음 -> 즉시 이동
+                        // [Case 2-1] 상세 지도 있음 -> 즉시 이동
                         if (!isDetailMode && hasDetailMap) {
                             performTransition(() => {
                                 window.location.search = `?region=${regionId}`;
@@ -497,14 +577,15 @@
                             return; 
                         }
 
-                        // 2. 그 외 (전국&상세없음 OR 상세지도내부) -> 로그인 체크
-                        const targetUrl = `main.html?region=${regionId}`;
+                        // [Case 1 & 2-2] 로그인 체크 후 이동
+                        // [수정] 꼬리표(&anim=1) 추가
+                        const targetUrl = `main.html?region=${regionId}&anim=1`;
                         
                         if (isLoggedIn) {
                             performTransition(() => { window.location.href = targetUrl; });
                         } else {
-                            // 팝업 오픈
-                            modal.show(data.name, data.count, 
+                            // 모달 오픈 (지역명, ID, 카운트, 콜백)
+                            modal.show(data.name, regionId, data.count, 
                                 () => { performTransition(() => { window.location.href = targetUrl; }); }
                             );
                         }
@@ -560,12 +641,8 @@
                     });
                 });
 
-                // 인트로의 '기존 회원 로그인' 버튼
                 btnIntroLogin.addEventListener('click', () => {
-                    // 바로 로그인 뷰로 시작, 콜백은 없으므로(인트로니까) 그냥 reload나 메인 이동
-                    modal.show(null, 0, () => {
-                        window.location.reload(); 
-                    }, 'login');
+                    modal.show(null, null, 0, () => { window.location.reload(); }, 'login');
                 });
             }
 
