@@ -403,3 +403,13 @@ document.addEventListener('DOMContentLoaded', () => {
         shareModal.addEventListener('click', (e) => { if (e.target === shareModal) closeShareModal(); });
     }
 });
+
+function filterCategory(category) {
+    // 1. 버튼 활성화 UI 변경
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // 2. 실제 데이터 필터링 로직 (나중에 구현)
+    console.log(`선택된 카테고리: ${category}`);
+    // renderSlide(filteredData); // 이런 식으로 데이터 다시 그리기
+} ;

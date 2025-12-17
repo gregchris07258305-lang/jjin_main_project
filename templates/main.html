@@ -9,6 +9,8 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -32,7 +34,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 
     <style>
-        /* 텍스트 영역 높이 고정 (레이아웃 흔들림 방지) */
+        /* 텍스트 영역 높이 고정 */
         .header-text {
             display: flex;
             flex-direction: column;
@@ -40,12 +42,13 @@
             min-height: 180px; 
         }
 
-        /* [중요] 초기 상태는 CSS로 숨기지 않습니다. 
-           script.js의 initHeaderAnimation()이 JS로 즉시 opacity:0 처리를 합니다.
-           이렇게 해야 GSAP이 통제권을 100% 가집니다.
-        */
+        .header-text h1, .header-text p {
+            opacity: 0;
+            visibility: hidden; 
+            transform: translateY(30px);
+            will-change: transform, opacity;
+        }
         
-        /* 비디오 영역 공간 확보 (레이아웃 흔들림 방지) */
         .header-image-container {
             width: 100%;
             aspect-ratio: 16 / 9; 
@@ -68,6 +71,22 @@
         }
         
         #preloader { opacity: 1; visibility: visible; display: flex; transition: opacity 0.5s ease; }
+
+/* Minimal Strip Banner Style */
+        .apple-banner {
+            /* 배경색은 HTML 인라인 클래스(bg-[#222222])가 담당하지만, 백업용으로 남김 */
+            background-color: #222222;
+        }
+        
+        /* 아이콘 전환 애니메이션은 script.js의 GSAP가 담당합니다. */
+        /* 아이콘 위치 미세 조정 */
+        .cycling-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 
@@ -126,9 +145,54 @@
             <div id="swipe-guide" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none opacity-0 flex flex-col items-center justify-center gap-3"><div class="w-20 h-20 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl border border-white/10"><i class="fa-solid fa-hand-pointer text-3xl text-gray-200" id="hand-icon"></i></div><div class="px-4 py-2 bg-black/70 backdrop-blur-sm shadow-lg border border-white/10"><p class="text-sm font-bold text-gray-200 whitespace-nowrap">👉 오른쪽: 찜 ❤️ &nbsp;|&nbsp; 👈 왼쪽: 넘기기</p></div></div></div>
         </section>
 
-        <section class="search-section">
-            <h2>관심있는 정책 키워드는<br>직접 찾아보세요!</h2><p>원하는 키워드로 정책을 검색해보세요.</p>
-            <div class="search-bar-container"><div class="icon-area"><i class="fa-solid fa-magnifying-glass"></i></div><input type="text" id="search-input" placeholder="키워드를 입력해보세요 (예: 취업, 주거)"><button id="search-btn">SEARCH</button></div>
+<section class="apple-banner-wrapper my-14 w-full px-4 md:px-0">
+            <div class="apple-banner relative w-full mx-auto overflow-hidden text-white flex flex-col md:flex-row items-center justify-between 
+                        gap-4 md:gap-0
+                        rounded-[24px] md:rounded-[12px]
+                        p-6 md:py-3 md:px-4
+                        bg-[#777777]
+                        transition-all duration-500 hover:border-gray-600 shadow-lg group">
+                
+                <div class="flex-shrink-0 z-10">
+                    <div class="relative w-[48px] h-[48px] rounded-full bg-[#f4f4f4] flex items-center justify-center overflow-hidden">
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-orange" data-text="취업/창업을">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-teal" data-text="주거 지원을">
+                            <i class="fa-solid fa-house-chimney"></i>
+                        </div>
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-beige" data-text="금융 혜택을">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                        <div class="cycling-icon absolute opacity-0 text-xl text-[#A8A29E]" data-text="교육/역량을">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-red" data-text="복지/문화를">
+                            <i class="fa-solid fa-hand-holding-heart"></i>
+                        </div>
+                        <div class="cycling-icon absolute opacity-0 text-xl text-[#444444]" data-text="참여/권리를">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 text-center px-4 z-10">
+                    <h2 class="text-[15px] font-bold text-gray-200 tracking-tight m-0">
+                        청년 정책의 
+                        <span id="banner-keyword" class="text-[#fcaa2f] inline-block min-w-[100px] transition-colors duration-300">
+                            6가지 핵심 키워드를
+                        </span> 
+                        확인하세요
+                    </h2>
+                </div>
+
+                <div class="flex-shrink-0 z-10 w-full md:w-auto">
+                    <a href="/all.html" class="flex items-center justify-center w-full md:w-auto px-6 py-2.5 rounded-full bg-[#333333] hover:bg-white text-white hover:text-black text-[14px] font-bold transition-all duration-300 group-hover:shadow-md">
+                        더 알아보기 <i class="fa-solid fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+
+            </div>
         </section>
 
         <section class="slide-section">
@@ -154,13 +218,13 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // 변수 설정
+            // 1. 변수 설정
             const urlParams = new URLSearchParams(window.location.search);
             let regionId = urlParams.get('region');
             const showAnim = urlParams.get('anim');
             const preloader = document.getElementById('preloader');
 
-            // Session Storage
+            // 2. Session Storage
             if (regionId) {
                 sessionStorage.setItem('sseuk_selected_region', regionId);
             } else {
@@ -181,8 +245,7 @@
             const headerDesc = document.querySelector('.header-text p');
             const searchInput = document.getElementById('search-input');
 
-            // 1. [데이터 교체] 프리로더 뒤에서 텍스트를 바꿉니다.
-            // script.js가 이미 initHeaderAnimation()으로 요소를 숨겨놨기 때문에, 여기서 내용을 바꿔도 화면엔 안 보입니다.
+            // 3. [데이터 교체]
             if (regionId && REGION_NAMES[regionId]) {
                 const regionName = REGION_NAMES[regionId];
                 if (headerTitle) headerTitle.innerHTML = `<span class="text-primary-teal">${regionName}</span>의<br>청년 정책 소식 📰`;
@@ -193,10 +256,63 @@
                 if (headerDesc) headerDesc.innerHTML = `나에게 딱 맞는 정책을 쉽고 빠르게 찾아보세요.<br>매일 업데이트되는 새로운 소식을 놓치지 마세요!`;
             }
 
-            // 2. [로딩 종료 안전장치]
+// 4. [배너 아이콘 & 텍스트 순환 애니메이션]
+    const icons = document.querySelectorAll('.cycling-icon');
+    const keywordSpan = document.getElementById('banner-keyword'); // 텍스트 타겟
+
+    if(icons.length > 0 && keywordSpan) {
+        // 무한 반복 타임라인
+        let iconTl = gsap.timeline({ repeat: -1 });
+        
+        icons.forEach((icon, index) => {
+            const newText = icon.getAttribute('data-text'); // HTML에서 텍스트 가져오기
+
+            // [Step 1] 등장 (Icon In + Text Change & In)
+            iconTl
+            // (1) 아이콘 등장
+            .to(icon, { 
+                opacity: 1, 
+                scale: 1.2, 
+                duration: 0.5, 
+                ease: "back.out(1.7)" 
+            }, "start" + index) // 같은 라벨 사용으로 동시 시작
+            
+            // (2) 텍스트 교체 (기존 텍스트 사라짐 -> 글자 바꿈 -> 나타남)
+            .to(keywordSpan, { 
+                opacity: 0, 
+                y: 10, // 살짝 아래로 처지며 사라짐 (디테일)
+                duration: 0.2, 
+                onComplete: () => {
+                    keywordSpan.innerText = newText; // 글자 교체
+                }
+            }, "start" + index)
+            .to(keywordSpan, { 
+                opacity: 1, 
+                y: 0, // 원래 위치로 복귀
+                duration: 0.3,
+                ease: "power2.out"
+            }, ">") // 글자 교체 직후 등장
+
+            // [Step 2] 대기 (1.5초)
+            
+            // [Step 3] 퇴장 (Icon Out + Text Out)
+            .to(icon, { 
+                opacity: 0, 
+                scale: 0.8, 
+                duration: 0.3, 
+                delay: 1.5, // 1.5초 동안 보여줌
+                ease: "power2.in" 
+            }, "end" + index)
+            
+            // 텍스트는 아이콘이 사라질 때 같이 사라지거나, 
+            // 다음 아이콘이 나올 때 자연스럽게 교체되도록 여기서는 굳이 안 지워도 됩니다.
+            // 하지만 깔끔함을 위해 살짝 흐리게 처리할 수도 있습니다.
+            // 여기서는 '다음 루프의 Step 1'에서 사라지게 두는 것이 끊김 없이 자연스럽습니다.
+        });
+    }
+            // 5. [로딩 종료 안전장치]
             function forceHidePreloader() {
                 if (preloader && preloader.style.display !== 'none') {
-                    // 혹시 script.js의 Lottie가 실패해도 강제로 끄고 애니메이션 실행
                     gsap.to(preloader, {
                         opacity: 0,
                         duration: 0.5,
@@ -208,17 +324,12 @@
                 }
             }
 
-            // 3. 실행 분기
+            // 6. 실행 분기
             if (showAnim === '1') {
-                // 랜딩페이지에서 옴 -> script.js가 처리하도록 기다리되, 3초 안전장치만 걸어둠
                 setTimeout(() => forceHidePreloader(), 3000); 
             } else {
-                // 바로 접속함 -> 로딩 즉시 끄고 바로 애니메이션
                 if (preloader) preloader.style.display = 'none';
-                
-                // 요소 초기화가 확실히 끝난 뒤 실행하기 위해 아주 약간의 지연
                 setTimeout(() => {
-                    // 여기서도 playHeaderAnimation을 부르면 됩니다 (이미 script.js에 정의됨)
                     if(window.playHeaderAnimation) window.playHeaderAnimation();
                 }, 50);
             }
