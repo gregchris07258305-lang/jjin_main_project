@@ -8,6 +8,7 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -35,33 +36,64 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 
     <style>
         .header-text h1, .header-text p {
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(30px);
-            will-change: transform, opacity;
+            opacity: 0; visibility: hidden; transform: translateY(30px); will-change: transform, opacity;
         }
-        /* 텍스트 영역 높이 확보 */
         .header-text {
-            min-height: 180px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            min-height: 180px; display: flex; flex-direction: column; justify-content: center;
         }
+
+        /* [추가] 오로라 카드 배경 스타일 (기존 bg-aurora 클래스용) */
+        .bg-aurora {
+            background: linear-gradient(135deg, #F48245 0%, #FF5A5F 100%);
+            position: relative;
+        }
+        .bg-aurora::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+            animation: aurora-rotate 10s linear infinite; pointer-events: none;
+        }
+        @keyframes aurora-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* [추가] MBTI 모달 스타일 */
+        #mbti-modal { transition: opacity 0.3s ease; }
+        #mbti-modal.hidden { opacity: 0; pointer-events: none; }
+
+        .aurora-layer-dark {
+            position: absolute; inset: 0; z-index: 0; overflow: hidden; background: #1a1a2e;
+        }
+        .aurora-blob {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
+            mix-blend-mode: screen; animation: blob-move 10s infinite alternate ease-in-out;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 60%; height: 60%; background: #F48245; }
+        .blob-2 { bottom: -10%; right: -10%; width: 70%; height: 70%; background: #FF5A5F; animation-duration: 15s; }
+        
+        @keyframes blob-move { from { transform: translate(0,0) scale(1); } to { transform: translate(20px, 20px) scale(1.1); } }
+
+        .result-card-enter { animation: slideUpFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUpFadeIn {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .typing-cursor::after {
+            content: '|'; display: inline-block; margin-left: 4px; animation: blink 0.7s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     </style>
 </head>
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased bg-[#f9fafb]">
     
     <nav class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/70 backdrop-blur-md transition-all duration-300">
         <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
-            
             <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
                 <img src="/static/images/logo.svg" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
             </a>
-
             <ul class="flex gap-2 md:gap-3">
                 <li><a href="/main.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">Home</a></li>
                 <li><a href="/all.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-white bg-primary-teal shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3d8b94] transition-all">All Policies</a></li>
@@ -74,13 +106,11 @@
     <main class="body-container mypage-container max-w-[1200px] mx-auto px-5 py-10">
         
         <section class="w-full mb-12 pt-4 flex flex-col md:flex-row items-center justify-between gap-10">
-            
             <div class="flex-1 text-center md:text-left header-text items-center md:items-start">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-primary-orange text-xs font-bold mb-6">
                     <span>My Analytics</span>
                     <i class="fa-solid fa-star text-[10px]"></i>
                 </div>
-                
                 <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
                     나의 정책 활동<br>
                     <span class="relative inline-block z-10">
@@ -88,19 +118,14 @@
                         <span class="absolute bottom-1 left-0 w-full h-3 bg-orange-100 -z-10 rounded-sm"></span>
                     </span>
                 </h1>
-                
                 <p class="text-gray-500 text-lg leading-relaxed">
                     내가 찜한 정책과 관심사 데이터를 확인해보세요.<br>
                     나만의 맞춤형 정책 라이프가 시작됩니다.
                 </p>
             </div>
-
             <div class="flex-1 flex justify-center md:justify-end relative header-image">
                 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-50 rounded-full blur-3xl -z-10 opacity-60"></div>
-                <img src="/static/images/header2_image.png" 
-                     onerror="this.src='https://placehold.co/500x400/transparent/orange?text=Main+Banner'"
-                     class="w-full max-w-[450px] object-contain drop-shadow-sm hover:scale-105 transition-transform duration-500" 
-                     alt="Header Banner">
+                <img src="/static/images/header2_image.png" onerror="this.src='https://placehold.co/500x400/transparent/orange?text=Main+Banner'" class="w-full max-w-[450px] object-contain drop-shadow-sm hover:scale-105 transition-transform duration-500" alt="Header Banner">
             </div>
         </section>
 
@@ -108,7 +133,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-[minmax(180px,auto)]">
 
-            <div class="bg-aurora group relative col-span-1 h-[320px] rounded-[40px] overflow-hidden shadow-md cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl border border-white/10">
+            <div onclick="openMbtiModal()" class="bg-aurora group relative col-span-1 h-[320px] rounded-[40px] overflow-hidden shadow-md cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl border border-white/10">
                 <div class="relative z-10 h-full flex flex-col p-8 text-white">
                     <h2 class="text-3xl font-bold leading-tight mb-2 drop-shadow-md">나의 정책<br><span class="text-green-300">MBTI는?</span></h2>
                     <p class="text-white/80 text-sm font-medium mt-2">내 성향 분석하고<br>딱 맞는 지원받기</p>
@@ -116,9 +141,7 @@
                         <span>Tap to view</span> <i class="fa-solid fa-arrow-right animate-pulse"></i>
                     </div>
                 </div>
-                <img src="/static/images/membership_image.png" 
-                     onerror="this.src='https://placehold.co/300x300/transparent/ffffff?text=MBTI'"
-                     class="absolute right-[-40px] bottom-[-30px] w-64 h-64 object-contain transition-transform duration-500 group-hover:scale-110 opacity-90 mix-blend-hard-light"> 
+                <img src="/static/images/membership_image.png" onerror="this.src='https://placehold.co/300x300/transparent/ffffff?text=MBTI'" class="absolute right-[-40px] bottom-[-30px] w-64 h-64 object-contain transition-transform duration-500 group-hover:scale-110 opacity-90 mix-blend-hard-light"> 
             </div>
 
             <div class="col-span-1 h-[320px] rounded-[40px] bg-white p-8 shadow-sm border border-gray-100 flex flex-col justify-center">
@@ -214,15 +237,126 @@
         </div>
     </div>
 
+    <div id="mbti-modal" class="fixed inset-0 z-[9999] flex items-center justify-center hidden">
+        <div class="aurora-layer-dark">
+            <div class="aurora-blob blob-1"></div>
+            <div class="aurora-blob blob-2"></div>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        </div>
+
+        <div class="relative z-10 w-full h-full md:h-auto md:max-w-md md:aspect-[4/5] bg-white/5 backdrop-blur-xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col p-8 text-white">
+            
+            <button onclick="closeMbtiModal()" class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 z-50">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+
+            <div id="mbti-loading" class="flex-1 flex flex-col items-center justify-center text-center space-y-8">
+                <div class="w-32 h-32" id="loading-lottie"></div>
+                <h3 class="text-2xl font-bold leading-snug typing-cursor text-white" id="loading-text">분석 중...</h3>
+            </div>
+
+            <div id="mbti-result" class="hidden flex-1 flex flex-col items-center text-center pt-10 pb-6 opacity-0">
+                <p class="text-sm font-medium text-white/70 mb-2">나의 정책 성향은?</p>
+                <h2 class="text-4xl font-extrabold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-primary-orange to-primary-red">
+                    열정적인 개척자형
+                </h2>
+                <h1 class="text-6xl font-black mb-6 tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">ENFP</h1>
+                
+                <div class="w-48 h-48 relative mb-8">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-primary-orange to-primary-red rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                    
+
+[Image of ENFP icon]
+
+                    <img src="https://cdn-icons-png.flaticon.com/512/7480/7480838.png" alt="MBTI Icon" class="relative z-10 w-full h-full object-contain drop-shadow-2xl">
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-2 mb-8">
+                    <span class="px-3 py-1.5 bg-white/10 rounded-full text-sm font-bold border border-white/10">#도전적인</span>
+                    <span class="px-3 py-1.5 bg-white/10 rounded-full text-sm font-bold border border-white/10">#새로운기회</span>
+                </div>
+
+                <div class="w-full mt-auto">
+                    <button class="w-full py-4 bg-primary-orange hover:bg-[#e06d2e] rounded-xl font-bold text-lg transition-all shadow-lg hover:-translate-y-1 text-white">
+                        맞춤형 정책 추천받기 👉
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/script.js"></script>
     
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             if (window.playHeaderAnimation) {
-                setTimeout(() => {
-                    window.playHeaderAnimation();
-                }, 100);
+                setTimeout(() => { window.playHeaderAnimation(); }, 100);
             }
+
+            // MBTI 모달 로직
+            const mbtiModal = document.getElementById('mbti-modal');
+            const mbtiLoading = document.getElementById('mbti-loading');
+            const mbtiResult = document.getElementById('mbti-result');
+            const loadingText = document.getElementById('loading-text');
+            let loadingAnimation = null;
+
+            function initLoadingLottie() {
+                if (loadingAnimation) return;
+                const container = document.getElementById('loading-lottie');
+                if (!container) return;
+                // [Lottie] 로딩 스피너 (임시 URL)
+                const LOTTIE_URL = 'https://lottie.host/9e1205c4-42f0-496a-8b83-8a033284f23b/D0kQj2w6zB.json'; 
+                try {
+                    loadingAnimation = lottie.loadAnimation({
+                        container: container, renderer: 'svg', loop: true, autoplay: false, path: LOTTIE_URL 
+                    });
+                } catch (e) { container.innerHTML = "Loading..."; }
+            }
+
+            function typeWriter(text, element, speed = 100) {
+                element.innerText = "";
+                let i = 0;
+                function type() {
+                    if (i < text.length) { element.innerText += text.charAt(i); i++; setTimeout(type, speed); }
+                    else { element.classList.remove('typing-cursor'); }
+                }
+                element.classList.add('typing-cursor');
+                type();
+            }
+
+            window.openMbtiModal = function() {
+                mbtiModal.classList.remove('hidden');
+                mbtiLoading.classList.remove('hidden');
+                mbtiResult.classList.add('hidden');
+                mbtiResult.classList.remove('result-card-enter');
+                initLoadingLottie();
+                if(loadingAnimation) loadingAnimation.play();
+
+                typeWriter("두구두구....", loadingText, 150);
+                setTimeout(() => { typeWriter("분석 완료!", loadingText, 100); }, 2000);
+                setTimeout(() => {
+                    if(loadingAnimation) loadingAnimation.stop();
+                    gsap.to(mbtiLoading, {
+                        opacity: 0, duration: 0.3, 
+                        onComplete: () => {
+                            mbtiLoading.classList.add('hidden'); mbtiLoading.style.opacity = 1;
+                            mbtiResult.classList.remove('hidden'); mbtiResult.classList.add('result-card-enter');
+                        }
+                    });
+                }, 3500);
+            };
+
+            window.closeMbtiModal = function() {
+                gsap.to(mbtiModal, {
+                    opacity: 0, duration: 0.3,
+                    onComplete: () => {
+                        mbtiModal.classList.add('hidden'); mbtiModal.style.opacity = 1;
+                        if(loadingAnimation) loadingAnimation.stop(); loadingText.innerText = "분석 중...";
+                    }
+                });
+            };
+            
+            initLoadingLottie();
         });
     </script>
 </body>
