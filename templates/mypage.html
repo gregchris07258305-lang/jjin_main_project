@@ -37,6 +37,7 @@
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <style>
         .header-text h1, .header-text p {
@@ -46,43 +47,48 @@
             min-height: 180px; display: flex; flex-direction: column; justify-content: center;
         }
 
-        /* [추가] 오로라 카드 배경 스타일 (기존 bg-aurora 클래스용) */
         .bg-aurora {
-            background: linear-gradient(135deg, #F48245 0%, #FF5A5F 100%);
-            position: relative;
+            background-color: #111827; position: relative; overflow: hidden;
         }
         .bg-aurora::before {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
-            animation: aurora-rotate 10s linear infinite; pointer-events: none;
+            background: radial-gradient(circle, rgba(94, 234, 212, 0.25) 0%, transparent 50%);
+            animation: aurora-rotate 15s linear infinite; pointer-events: none;
         }
-        @keyframes aurora-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .bg-aurora::after {
+            content: ''; position: absolute; bottom: -30%; right: -30%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(94, 234, 212, 0.15) 0%, transparent 60%);
+            animation: aurora-pulse 8s infinite alternate ease-in-out; pointer-events: none;
+        }
 
-        /* [추가] MBTI 모달 스타일 */
+        @keyframes aurora-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes aurora-pulse { 0% { transform: scale(1); } 100% { transform: scale(1.2); } }
+
         #mbti-modal { transition: opacity 0.3s ease; }
         #mbti-modal.hidden { opacity: 0; pointer-events: none; }
 
         .aurora-layer-dark {
             position: absolute; inset: 0; z-index: 0; overflow: hidden; background: #1a1a2e;
         }
-        .aurora-blob {
-            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
-            mix-blend-mode: screen; animation: blob-move 10s infinite alternate ease-in-out;
-        }
-        .blob-1 { top: -10%; left: -10%; width: 60%; height: 60%; background: #F48245; }
-        .blob-2 { bottom: -10%; right: -10%; width: 70%; height: 70%; background: #FF5A5F; animation-duration: 15s; }
         
-        @keyframes blob-move { from { transform: translate(0,0) scale(1); } to { transform: translate(20px, 20px) scale(1.1); } }
+        :root { --aurora-point: #6CD984; }
+
+        .aurora-blob {
+            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6;
+            mix-blend-mode: screen; animation: blob-move 8s infinite alternate ease-in-out;
+        }
+        .blob-1 { top: -20%; left: -20%; width: 80%; height: 80%; background: var(--aurora-point); }
+        .blob-2 { bottom: -20%; right: -20%; width: 90%; height: 90%; background: var(--aurora-point); animation-duration: 12s; opacity: 0.4; }
+        .blob-3 { top: 40%; left: 40%; width: 50%; height: 50%; background: #ffffff; animation-duration: 10s; opacity: 0.15; }
+        
+        @keyframes blob-move { 
+            from { transform: translate(-30px, -30px) scale(1); } to { transform: translate(60px, 60px) scale(1.2); } 
+        }
 
         .result-card-enter { animation: slideUpFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes slideUpFadeIn {
-            from { opacity: 0; transform: translateY(40px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        @keyframes slideUpFadeIn { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        .typing-cursor::after {
-            content: '|'; display: inline-block; margin-left: 4px; animation: blink 0.7s infinite;
-        }
+        .typing-cursor::after { content: '|'; display: inline-block; margin-left: 4px; animation: blink 0.7s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     </style>
 </head>
@@ -104,7 +110,6 @@
     </nav>
 
     <main class="body-container mypage-container max-w-[1200px] mx-auto px-5 py-10">
-        
         <section class="w-full mb-12 pt-4 flex flex-col md:flex-row items-center justify-between gap-10">
             <div class="flex-1 text-center md:text-left header-text items-center md:items-start">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-primary-orange text-xs font-bold mb-6">
@@ -132,16 +137,18 @@
         <div class="w-full h-[1px] bg-gray-100 mb-12"></div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-[minmax(180px,auto)]">
-
-            <div onclick="openMbtiModal()" class="bg-aurora group relative col-span-1 h-[320px] rounded-[40px] overflow-hidden shadow-md cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl border border-white/10">
+            <div onclick="openMbtiModal()" class="bg-aurora group relative col-span-1 h-[320px] rounded-[40px] overflow-hidden shadow-md cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl border border-white/5">
                 <div class="relative z-10 h-full flex flex-col p-8 text-white">
-                    <h2 class="text-3xl font-bold leading-tight mb-2 drop-shadow-md">나의 정책<br><span class="text-green-300">MBTI는?</span></h2>
-                    <p class="text-white/80 text-sm font-medium mt-2">내 성향 분석하고<br>딱 맞는 지원받기</p>
-                    <div class="mt-auto flex items-center gap-2 text-white/80 text-sm font-bold">
-                        <span>Tap to view</span> <i class="fa-solid fa-arrow-right animate-pulse"></i>
+                    <h2 class="text-3xl font-bold leading-tight mb-2 drop-shadow-md">
+                        나의 정책<br><span class="text-[#5EEAD4] drop-shadow-[0_0_12px_rgba(94,234,212,0.6)]">MBTI는?</span>
+                    </h2>
+                    <p class="text-gray-300 text-sm font-medium mt-2">내 성향 분석하고<br>딱 맞는 지원받기</p>
+                    <div class="mt-auto flex items-center gap-2 text-gray-300 text-sm font-bold group-hover:text-white transition-colors">
+                        <span>Tap to view</span> 
+                        <i class="fa-solid fa-arrow-right animate-pulse text-[#5EEAD4] drop-shadow-[0_0_8px_rgba(94,234,212,0.8)]"></i>
                     </div>
                 </div>
-                <img src="/static/images/membership_image.png" onerror="this.src='https://placehold.co/300x300/transparent/ffffff?text=MBTI'" class="absolute right-[-40px] bottom-[-30px] w-64 h-64 object-contain transition-transform duration-500 group-hover:scale-110 opacity-90 mix-blend-hard-light"> 
+                <img src="/static/images/membership_image.png" onerror="this.src='https://placehold.co/300x300/transparent/ffffff?text=MBTI'" class="absolute right-[-40px] bottom-[-30px] w-64 h-64 object-contain transition-transform duration-500 group-hover:scale-110 opacity-80 mix-blend-lighten"> 
             </div>
 
             <div class="col-span-1 h-[320px] rounded-[40px] bg-white p-8 shadow-sm border border-gray-100 flex flex-col justify-center">
@@ -149,9 +156,7 @@
                     <h3 class="font-bold text-xl text-gray-800">관심 키워드 트렌드 📈</h3>
                     <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis"></i></button>
                 </div>
-                <div class="w-full h-full flex justify-center items-center">
-                    <canvas id="myChart"></canvas>
-                </div>
+                <div class="w-full h-full flex justify-center items-center"><canvas id="myChart"></canvas></div>
             </div>
 
             <div class="col-span-1 rounded-[30px] bg-white p-8 shadow-sm border border-gray-100 flex items-center justify-between relative overflow-hidden group hover:border-orange-200 transition-colors">
@@ -159,9 +164,7 @@
                 <div class="flex items-center gap-6 relative z-10">
                     <div class="relative">
                         <img src="https://placehold.co/120x120/F48245/ffffff?text=User" alt="Profile" class="w-24 h-24 rounded-full border-4 border-orange-50 shadow-sm object-cover group-hover:scale-105 transition-transform">
-                        <button class="absolute bottom-0 right-0 bg-gray-900 text-white w-8 h-8 rounded-full shadow-md hover:bg-primary-orange transition-colors flex items-center justify-center">
-                            <i class="fa-solid fa-pen text-xs"></i>
-                        </button>
+                        <button class="absolute bottom-0 right-0 bg-gray-900 text-white w-8 h-8 rounded-full shadow-md hover:bg-primary-orange transition-colors flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-gray-900 mb-1">김청년 님 👋</h2>
@@ -182,22 +185,15 @@
                         <div class="bg-primary-orange h-full rounded-full" style="width: 85%"></div>
                     </div>
                 </div>
-
                 <div class="col-span-2 sm:col-span-1 bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 flex justify-around items-center group hover:border-orange-200 transition-colors">
                     <div class="text-center">
-                        <div class="text-gray-300 text-2xl mb-1 transition-colors group-hover:text-primary-red">
-                            <i class="fa-solid fa-heart"></i>
-                        </div>
+                        <div class="text-gray-300 text-2xl mb-1 transition-colors group-hover:text-primary-red"><i class="fa-solid fa-heart"></i></div>
                         <p class="text-xs text-gray-400 font-bold mb-1">찜한 정책</p>
                         <p class="text-xl font-extrabold text-gray-800">12</p>
                     </div>
-
                     <div class="w-[1px] h-12 bg-gray-100"></div>
-
                     <div class="text-center">
-                        <div class="text-gray-300 text-2xl mb-1 transition-colors group-hover:text-primary-teal">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </div>
+                        <div class="text-gray-300 text-2xl mb-1 transition-colors group-hover:text-primary-teal"><i class="fa-solid fa-paper-plane"></i></div>
                         <p class="text-xs text-gray-400 font-bold mb-1">신청 완료</p>
                         <p class="text-xl font-extrabold text-gray-800">3</p>
                     </div>
@@ -211,7 +207,6 @@
                 </div>
                 <div id="mypage-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"></div>
             </div>
-
         </div>
     </main>
 
@@ -226,12 +221,8 @@
                 <p id="modal-desc">정책 상세 내용</p>
                 <p id="modal-date" class="date">마감일</p>
                 <div class="modal-actions">
-                    <button id="modal-close-btn" class="action-btn back-btn">
-                        <i class="fa-solid fa-arrow-left"></i> 되돌아가기
-                    </button>
-                    <button id="modal-heart-btn" class="action-btn heart-btn">
-                        <i class="fa-regular fa-heart"></i>
-                    </button>
+                    <button id="modal-close-btn" class="action-btn back-btn"><i class="fa-solid fa-arrow-left"></i> 되돌아가기</button>
+                    <button id="modal-heart-btn" class="action-btn heart-btn"><i class="fa-regular fa-heart"></i></button>
                 </div>
             </div>
         </div>
@@ -241,11 +232,11 @@
         <div class="aurora-layer-dark">
             <div class="aurora-blob blob-1"></div>
             <div class="aurora-blob blob-2"></div>
+            <div class="aurora-blob blob-3"></div>
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         </div>
 
-        <div class="relative z-10 w-full h-full md:h-auto md:max-w-md md:aspect-[4/5] bg-white/5 backdrop-blur-xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col p-8 text-white">
-            
+        <div id="mbti-card" class="relative z-10 w-full h-full md:h-auto md:max-w-md bg-white/10 backdrop-blur-xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col p-8 text-white">
             <button onclick="closeMbtiModal()" class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 z-50">
                 <i class="fa-solid fa-xmark text-2xl"></i>
             </button>
@@ -255,32 +246,54 @@
                 <h3 class="text-2xl font-bold leading-snug typing-cursor text-white" id="loading-text">분석 중...</h3>
             </div>
 
-            <div id="mbti-result" class="hidden flex-1 flex flex-col items-center text-center pt-10 pb-6 opacity-0">
-                <p class="text-sm font-medium text-white/70 mb-2">나의 정책 성향은?</p>
-                <h2 class="text-4xl font-extrabold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-primary-orange to-primary-red">
-                    열정적인 개척자형
-                </h2>
-                <h1 class="text-6xl font-black mb-6 tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">ENFP</h1>
-                
-                <div class="w-48 h-48 relative mb-8">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-primary-orange to-primary-red rounded-full blur-3xl opacity-30 animate-pulse"></div>
-                    
-
-[Image of ENFP icon]
-
-                    <img src="https://cdn-icons-png.flaticon.com/512/7480/7480838.png" alt="MBTI Icon" class="relative z-10 w-full h-full object-contain drop-shadow-2xl">
+            <div id="mbti-result" class="hidden flex-1 flex flex-col items-center justify-center text-center gap-5 opacity-0">
+                <div>
+                    <p class="text-sm font-medium text-white/70 mb-2">나의 정책 성향은?</p>
+                    <h2 id="result-title" class="text-xl md:text-2xl font-extrabold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-200">
+                        비전을 좇는 열정 개척자
+                    </h2>
+                    <h1 id="result-type" class="text-3xl md:text-4xl font-black tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                        취업/직무
+                    </h1>
                 </div>
                 
-                <div class="flex flex-wrap justify-center gap-2 mb-8">
-                    <span class="px-3 py-1.5 bg-white/10 rounded-full text-sm font-bold border border-white/10">#도전적인</span>
-                    <span class="px-3 py-1.5 bg-white/10 rounded-full text-sm font-bold border border-white/10">#새로운기회</span>
+                <div class="w-full aspect-[4/3] relative rounded-[24px] overflow-hidden shadow-2xl border border-white/10 group bg-gray-900">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none"></div>
+                    <img id="result-img" src="/static/images/dummy_result_mbti.png" alt="MBTI Result" class="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105">
                 </div>
+                
+                <div id="result-tags" class="flex flex-wrap justify-center items-center gap-2"></div>
 
-                <div class="w-full mt-auto">
-                    <button class="w-full py-4 bg-primary-orange hover:bg-[#e06d2e] rounded-xl font-bold text-lg transition-all shadow-lg hover:-translate-y-1 text-white">
-                        맞춤형 정책 추천받기 👉
+                <div class="w-full mt-2">
+                    <button onclick="shareMbtiImage()" class="w-full py-4 bg-white text-black hover:bg-gray-100 rounded-xl font-bold text-lg transition-all shadow-lg hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> 결과 카드 이미지 저장하기
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="export-template" style="position: fixed; left: -9999px; top: 0; width: 600px; height: 800px; background-color: #111827; z-index: -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; box-sizing: border-box; font-family: 'Pretendard', sans-serif;">
+        <div style="position: relative; z-index: 10; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <p style="font-size: 18px; color: rgba(255,255,255,0.7); margin: 0; font-weight: 500;">나의 정책 성향은?</p>
+            
+            <h2 id="export-title" style="font-size: 32px; font-weight: 800; color: #ffffff; margin: 0;">
+                비전을 좇는 열정 개척자
+            </h2>
+            
+            <h1 id="export-type" style="font-size: 56px; font-weight: 900; color: #ffffff; letter-spacing: 2px; margin: 0;">
+                취업/직무
+            </h1>
+
+            <div style="width: 480px; height: 360px; border-radius: 32px; overflow: hidden; margin: 20px 0; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative;">
+                <img id="export-img" src="/static/images/dummy_result_mbti.png" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+
+            <div id="export-tags" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;"></div>
+            
+            <div style="margin-top: 40px; opacity: 0.5;">
+                <img src="/static/images/logo.svg" style="height: 30px; filter: invert(1) brightness(200%);" onerror="this.style.display='none'">
+                <p style="color: #fff; font-size: 14px; margin-top: 5px; font-weight: bold;">쓱쓱 정책 플랫폼</p>
             </div>
         </div>
     </div>
@@ -289,22 +302,34 @@
     
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            if (window.playHeaderAnimation) {
-                setTimeout(() => { window.playHeaderAnimation(); }, 100);
-            }
+            if (window.playHeaderAnimation) setTimeout(() => { window.playHeaderAnimation(); }, 100);
 
-            // MBTI 모달 로직
+            const MBTI_TYPES = {
+                'edu': { title: '🎓 끊임없이 성장하는 지식 탐험가', type: '교육/자격증', color: '#4A9EA8', tags: ['#자기개발', '#자격증취득', '#평생학습'] },
+                'housing': { title: '🏡 로망을 실현하는 공간 설계자', type: '주거/자립', color: '#F48245', tags: ['#독립생활', '#주거안정', '#내집마련'] },
+                'finance': { title: '💰 빈틈없이 계획하는 자산 전략가', type: '금융/생활비', color: '#D9B36C', tags: ['#목돈마련', '#재테크', '#합리적소비'] },
+                'welfare': { title: '🍀 일상을 즐기는 낭만 수집가', type: '복지/문화', color: '#614AA8', tags: ['#워라밸', '#문화생활', '#심리안정'] },
+                'job': { title: '💼 비전을 좇는 열정 개척자', type: '취업/직무', color: '#6CD984', tags: ['#커리어성장', '#직무전문성', '#도전'] },
+                'startup': { title: '🚀 세상을 바꾸는 혁신 리더', type: '창업/사업', color: '#FF4343', tags: ['#창업도전', '#혁신아이디어', '#CEO'] }
+            };
+
+            const CURRENT_RESULT_KEY = 'job'; 
+
             const mbtiModal = document.getElementById('mbti-modal');
             const mbtiLoading = document.getElementById('mbti-loading');
             const mbtiResult = document.getElementById('mbti-result');
             const loadingText = document.getElementById('loading-text');
+            
+            const resultTitle = document.getElementById('result-title');
+            const resultType = document.getElementById('result-type');
+            const resultTags = document.getElementById('result-tags');
+            
             let loadingAnimation = null;
 
             function initLoadingLottie() {
                 if (loadingAnimation) return;
                 const container = document.getElementById('loading-lottie');
                 if (!container) return;
-                // [Lottie] 로딩 스피너 (임시 URL)
                 const LOTTIE_URL = 'https://lottie.host/9e1205c4-42f0-496a-8b83-8a033284f23b/D0kQj2w6zB.json'; 
                 try {
                     loadingAnimation = lottie.loadAnimation({
@@ -324,6 +349,28 @@
                 type();
             }
 
+            function setMbtiResult(key) {
+                const data = MBTI_TYPES[key];
+                if(!data) return;
+
+                resultTitle.innerText = data.title;
+                resultType.innerText = data.type;
+                resultTags.innerHTML = data.tags.map(tag => 
+                    `<span class="px-3 py-1.5 bg-white/20 rounded-full text-sm font-bold backdrop-blur-sm border border-white/10 shadow-sm flex items-center justify-center">${tag}</span>`
+                ).join('');
+                document.documentElement.style.setProperty('--aurora-point', data.color);
+
+                document.getElementById('export-title').innerText = data.title;
+                document.getElementById('export-type').innerText = data.type;
+                
+                // [수정: Flex 정렬 + Line-height 보정으로 완벽한 중앙 정렬 구현]
+                // line-height를 높이보다 살짝 작게 잡아 폰트 자체의 하단 여백을 상쇄
+                const exportTagsContainer = document.getElementById('export-tags');
+                exportTagsContainer.innerHTML = data.tags.map(tag => 
+                    `<span style="display: inline-block; height: 44px; line-height: 40px; padding: 0 24px; background: rgba(255,255,255,0.2); border-radius: 50px; color: white; font-weight: bold; font-size: 16px; border: 1px solid rgba(255,255,255,0.1); text-align: center; vertical-align: middle;">${tag}</span>`
+                ).join('');
+            }
+
             window.openMbtiModal = function() {
                 mbtiModal.classList.remove('hidden');
                 mbtiLoading.classList.remove('hidden');
@@ -333,6 +380,8 @@
                 if(loadingAnimation) loadingAnimation.play();
 
                 typeWriter("두구두구....", loadingText, 150);
+                setMbtiResult(CURRENT_RESULT_KEY);
+
                 setTimeout(() => { typeWriter("분석 완료!", loadingText, 100); }, 2000);
                 setTimeout(() => {
                     if(loadingAnimation) loadingAnimation.stop();
@@ -354,6 +403,42 @@
                         if(loadingAnimation) loadingAnimation.stop(); loadingText.innerText = "분석 중...";
                     }
                 });
+            };
+
+            window.shareMbtiImage = function() {
+                const target = document.getElementById('export-template');
+                const btn = document.querySelector('#mbti-result button');
+                const originalText = btn.innerHTML;
+                
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 이미지 생성 중...';
+                btn.disabled = true;
+                
+                const runCapture = () => {
+                    html2canvas(target, { 
+                        scale: 2, backgroundColor: '#111827', useCORS: true
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = 'my_policy_mbti.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }).catch(err => {
+                        console.error(err);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        alert("이미지 저장 실패");
+                    });
+                };
+
+                if (typeof html2canvas !== 'undefined') {
+                    runCapture();
+                } else {
+                    const script = document.createElement('script');
+                    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                    script.onload = runCapture;
+                    document.head.appendChild(script);
+                }
             };
             
             initLoadingLottie();
