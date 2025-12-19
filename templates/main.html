@@ -8,7 +8,6 @@
 
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,8 +29,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    
+    <link rel="stylesheet" href="/static/style.css">
 
     <style>
         /* 텍스트 영역 높이 고정 */
@@ -72,14 +72,11 @@
         
         #preloader { opacity: 1; visibility: visible; display: flex; transition: opacity 0.5s ease; }
 
-/* Minimal Strip Banner Style */
+        /* Minimal Strip Banner Style */
         .apple-banner {
-            /* 배경색은 HTML 인라인 클래스(bg-[#222222])가 담당하지만, 백업용으로 남김 */
             background-color: #222222;
         }
         
-        /* 아이콘 전환 애니메이션은 script.js의 GSAP가 담당합니다. */
-        /* 아이콘 위치 미세 조정 */
         .cycling-icon {
             display: flex;
             align-items: center;
@@ -87,7 +84,8 @@
             width: 100%;
             height: 100%;
         }
-        /* [추가] 모달 입력창 스타일 */
+
+        /* 모달 입력창 스타일 */
         .auth-input {
             width: 100%;
             padding: 12px 16px;
@@ -115,7 +113,7 @@
     <nav class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/70 backdrop-blur-md transition-all duration-300">
         <div class="mx-auto flex h-[80px] max-w-[1200px] items-center justify-center md:justify-between px-5">
             <a href="/" class="hidden md:flex items-center transition-opacity hover:opacity-80">
-                <img src="/static/images/logo.svg" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
+                <img src="/static/images/team_logo.webp" onerror="this.src='https://placehold.co/100x40/transparent/333?text=LOGO'" alt="Logo" class="h-10 w-auto">
             </a>
             <ul class="flex gap-2 md:gap-3">
                 <li><a href="/main.html" class="flex items-center justify-center rounded-full px-4 py-2 text-[14px] md:text-[15px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">Home</a></li>
@@ -173,7 +171,7 @@
             </div>
         </section>
 
-<section class="apple-banner-wrapper my-14 w-full px-4 md:px-0">
+        <section class="apple-banner-wrapper my-14 w-full px-4 md:px-0">
             <div class="apple-banner relative w-full mx-auto overflow-hidden text-white flex flex-col md:flex-row items-center justify-between 
                         gap-4 md:gap-0
                         rounded-[24px] md:rounded-[12px]
@@ -183,23 +181,23 @@
                 
                 <div class="flex-shrink-0 z-10">
                     <div class="relative w-[48px] h-[48px] rounded-full bg-[#f4f4f4] flex items-center justify-center overflow-hidden">
-                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-orange" data-text="취업/창업을">
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-orange" data-text="취업/직무를">
                             <i class="fa-solid fa-briefcase"></i>
                         </div>
-                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-teal" data-text="주거 지원을">
+                        <div class="cycling-icon absolute opacity-0 text-xl text-blue-500" data-text="창업/사업을">
+                            <i class="fa-solid fa-rocket"></i>
+                        </div>
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-teal" data-text="주거/자립을">
                             <i class="fa-solid fa-house-chimney"></i>
                         </div>
-                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-beige" data-text="금융 혜택을">
+                        <div class="cycling-icon absolute opacity-0 text-xl text-primary-beige" data-text="금융/생활비를">
                             <i class="fa-solid fa-coins"></i>
                         </div>
-                        <div class="cycling-icon absolute opacity-0 text-xl text-[#A8A29E]" data-text="교육/역량을">
+                        <div class="cycling-icon absolute opacity-0 text-xl text-[#A8A29E]" data-text="교육/자격증을">
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
                         <div class="cycling-icon absolute opacity-0 text-xl text-primary-red" data-text="복지/문화를">
                             <i class="fa-solid fa-hand-holding-heart"></i>
-                        </div>
-                        <div class="cycling-icon absolute opacity-0 text-xl text-[#444444]" data-text="참여/권리를">
-                            <i class="fa-solid fa-users"></i>
                         </div>
                     </div>
                 </div>
@@ -208,7 +206,7 @@
                     <h2 class="text-[15px] font-bold text-gray-200 tracking-tight m-0">
                         청년 정책의 
                         <span id="banner-keyword" class="text-[#fcaa2f] inline-block min-w-[100px] transition-colors duration-300">
-                            6가지 핵심 키워드를
+                            6가지 핵심 분야를
                         </span> 
                         확인하세요
                     </h2>
@@ -239,7 +237,8 @@
     <div class="marquee-area"><div class="track"><span>서울시 청년 정책 모음 🚀 취업부터 주거까지 한눈에 확인하세요! &nbsp;&nbsp;&nbsp; 서울시 청년 정책 모음 🚀 취업부터 주거까지 한눈에 확인하세요! &nbsp;&nbsp;&nbsp; </span></div></div>
 
     <div id="policy-modal" class="modal-overlay hidden"><div class="modal-content"><div class="modal-image"><img id="modal-img" src="" alt="Policy Image"><span id="modal-category" class="modal-tag">카테고리</span></div><div class="modal-body"><h2 id="modal-title">정책 제목</h2><p id="modal-desc">정책 상세 내용</p><p id="modal-date" class="date">마감일</p><div class="modal-actions"><button id="modal-close-btn" class="action-btn back-btn"><i class="fa-solid fa-arrow-left"></i> 되돌아가기</button><button id="modal-heart-btn" class="action-btn heart-btn"><i class="fa-regular fa-heart"></i></button></div></div></div></div>
-<div id="auth-modal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 hidden opacity-0 transition-opacity duration-300">
+    
+    <div id="auth-modal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-[400px] w-full mx-4 transform scale-95 transition-transform duration-300 relative overflow-hidden" id="auth-modal-content">
             
             <button id="btn-modal-close-icon" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 z-10 p-1 hover:bg-gray-100 rounded-full transition-colors">
@@ -341,6 +340,7 @@
             </div>
         </div>
     </div>
+
     <div id="share-modal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 relative">
             
@@ -366,7 +366,8 @@
 
         </div>
     </div>
-<script src="/static/script.js"></script>
+
+    <script src="/static/script.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {

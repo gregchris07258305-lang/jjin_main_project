@@ -253,30 +253,86 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ============================================================
-// [7] Data Generation & Rendering Logic
 // ============================================================
-const categories = ["교육/역량", "취업/창업", "금융/자산", "창업", "복지/건강", "참여/권리"];
+// [7] Data Generation & Rendering Logic (Modified)
+// ============================================================
 
+// 1. 카테고리 명칭 정의 (새로운 카테고리 체계 반영)
+const categories = [
+    "취업/직무",    // job
+    "창업/사업",    // startup
+    "주거/자립",    // housing
+    "금융/생활비",  // finance
+    "교육/자격증",  // growth
+    "복지/문화"     // welfare
+];
+
+// 2. 데이터 생성 함수 (로컬 이미지 자동 매핑 - 카운터 방식 적용)
 function generatePolicyData(count) {
+    // 2-1. 한글 카테고리 -> 영어 파일명 접두사 매핑
+    const categoryMap = {
+        "취업/직무": "job",
+        "창업/사업": "startup",
+        "주거/자립": "housing",
+        "금융/생활비": "finance",
+        "교육/자격증": "growth",
+        "복지/문화": "welfare"
+    };
+
+    // 2-2. [핵심] 카테고리별 이미지 번호 카운터
+    // 함수 호출 시마다 초기화되면 안 되므로, 이 로직은 함수 밖으로 빼거나
+    // 이 함수가 '한 번에 전체 데이터'를 만들 때만 유효합니다.
+    // 현재 구조에서는 한 번 호출로 리스트를 만드므로 함수 내부에 있어도 작동은 하지만,
+    // *여러 번 호출(tinderData, allSlideData)* 시 이미지가 1번부터 다시 시작됩니다.
+    // 더 자연스러운 랜덤성을 위해 카운터 객체는 매 호출마다 초기화되는 현재 상태가 적절해 보입니다.
+    const categoryCounters = {}; 
+
     const data = [];
     for (let i = 1; i <= count; i++) {
         const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+
+        // --- 이미지 경로 생성 로직 ---
+        
+        // A. 카운터 초기화 (해당 카테고리가 처음이면 0)
+        if (categoryCounters[randomCategory] === undefined) {
+            categoryCounters[randomCategory] = 0;
+        }
+
+        // B. 현재 카운터 숫자를 가져와서 이미지 번호 결정 (1~5 순환)
+        // (0 % 5) + 1 = 1, (1 % 5) + 1 = 2 ...
+        const imgNum = categoryCounters[randomCategory];
+        const imgIndex = (imgNum % 5) + 1;
+
+        // C. 카운터 증가 (다음 같은 카테고리 아이템을 위해)
+        categoryCounters[randomCategory]++;
+
+        // D. 파일명 접두사 찾기 (Default: welfare)
+        const prefix = categoryMap[randomCategory] || "welfare";
+
+        // E. 최종 경로 완성
+        const localImage = `/static/images/card_images/${prefix}_${imgIndex}.webp`;
+
+        // ---------------------------
+
         data.push({
-            id: i, category: randomCategory,
+            id: i,
+            category: randomCategory,
             title: `[${randomCategory}] 청년 정책 제목 ${i}`,
             desc: "이 정책은 서울시 청년들을 위한 맞춤형 지원 사업입니다. 혜택을 놓치지 마세요.",
             date: `2025.12.${String(Math.floor(Math.random() * 30) + 1).padStart(2, '0')} 마감`,
-            image: `https://placehold.co/600x400/transparent/dddddd?text=Img+${i}`
+            image: localImage // 생성된 로컬 주소 할당
         });
     }
     return data;
 }
 
+// 3. 데이터 생성 실행
 const tinderData = generatePolicyData(10);
 const allSlideData = generatePolicyData(30);
 const myLikedData = generatePolicyData(5);
 
 // [수정됨] createCardHTML : 스와이프 피드백 아이콘 디자인 업그레이드
+// (참고: 아래 함수는 기존 코드에 있었으나, 이 섹션에 포함되어 있으므로 함께 유지해야 합니다.)
 function createCardHTML(item, isTinder = false) {
     const itemData = encodeURIComponent(JSON.stringify(item));
     
@@ -332,7 +388,7 @@ function createCardHTML(item, isTinder = false) {
                 </div>
             </div>`;
     } else {
-        // [Slide Card] - 기존 유지
+        // [Slide Card]
         return `
             <div class="policy-card relative flex flex-col overflow-hidden rounded-[20px] bg-[#F6F6F7] shadow-sm cursor-pointer hover:shadow-xl transition-all group hover:-translate-y-2 hover:bg-white" onclick="openModal('${itemData}')">
                 <div class="card-image w-full h-[180px] flex items-end justify-center overflow-hidden bg-white">
