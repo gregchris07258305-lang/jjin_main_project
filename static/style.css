@@ -492,3 +492,6 @@ p {
     border-radius: 20px;
 }
 
+body.menu-open {
+    overflow: hidden;
+}

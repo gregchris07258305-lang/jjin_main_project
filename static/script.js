@@ -650,3 +650,129 @@ document.addEventListener('DOMContentLoaded', () => {
     // 마이페이지 렌더링 실행
     renderMyPage();
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const menuOverlay = document.getElementById('mobile-menu-overlay');
+    const menuPanel = document.getElementById('mobile-menu-panel');
+
+    // 메뉴 열기 함수
+    function openMenu() {
+        menuOverlay.classList.remove('hidden'); // display: none 제거
+        // 약간의 지연을 주어 transition 효과가 먹히도록 함 (브라우저 렌더링 타이밍 이슈)
+        setTimeout(() => {
+            menuOverlay.classList.remove('opacity-0');
+            menuPanel.classList.remove('translate-x-full');
+        }, 10);
+        document.body.classList.add('menu-open'); // 스크롤 잠금
+    }
+
+    // 메뉴 닫기 함수
+    function closeMenu() {
+        menuOverlay.classList.add('opacity-0');
+        menuPanel.classList.add('translate-x-full');
+        document.body.classList.remove('menu-open'); // 스크롤 잠금 해제
+
+        // 애니메이션(300ms)이 끝난 뒤에 hidden 처리
+        setTimeout(() => {
+            menuOverlay.classList.add('hidden');
+        }, 300);
+    }
+
+    // 이벤트 리스너 등록
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', openMenu);
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeMenu);
+    }
+
+    // 배경 클릭 시 닫기
+    if (menuOverlay) {
+        menuOverlay.addEventListener('click', function(e) {
+            if (e.target === menuOverlay) {
+                closeMenu();
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- [기존 모바일 메뉴 로직 (유지)] ---
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const menuOverlay = document.getElementById('mobile-menu-overlay');
+    const menuPanel = document.getElementById('mobile-menu-panel');
+
+    function closeMobileMenu() {
+        if (!menuOverlay) return;
+        menuOverlay.classList.add('opacity-0');
+        menuPanel.classList.add('translate-x-full');
+        document.body.classList.remove('menu-open');
+        setTimeout(() => {
+            menuOverlay.classList.add('hidden');
+        }, 300);
+    }
+    // ... (기존 햄버거 버튼 이벤트 리스너들은 그대로 유지) ...
+
+
+    // --- [NEW: 로그인 모달 로직] ---
+    const loginModal = document.getElementById('login-modal');
+    const loginBackdrop = document.getElementById('login-modal-backdrop');
+    const loginPanel = document.getElementById('login-modal-panel');
+    const modalCloseBtn = document.getElementById('btn-modal-close-icon');
+    
+    // PC & Mobile 로그인 버튼들
+    const loginBtnPC = document.getElementById('login-btn-pc');
+    const loginBtnMobile = document.getElementById('login-btn-mobile');
+
+    // 모달 열기 함수
+    function openLoginModal() {
+        // 만약 모바일 메뉴가 열려있다면 닫기
+        closeMobileMenu();
+
+        if (loginModal) {
+            loginModal.classList.remove('hidden');
+            // 애니메이션을 위해 약간의 딜레이
+            setTimeout(() => {
+                loginBackdrop.classList.remove('opacity-0');
+                loginPanel.classList.remove('opacity-0', 'translate-y-4', 'scale-95');
+                loginPanel.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden'; // 배경 스크롤 막기
+        }
+    }
+
+    // 모달 닫기 함수
+    function closeLoginModal() {
+        if (loginModal) {
+            loginBackdrop.classList.add('opacity-0');
+            loginPanel.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+            loginPanel.classList.add('opacity-0', 'translate-y-4', 'scale-95');
+            
+            // 애니메이션(300ms) 후 hidden 처리
+            setTimeout(() => {
+                loginModal.classList.add('hidden');
+                document.body.style.overflow = ''; // 스크롤 잠금 해제
+            }, 300);
+        }
+    }
+
+    // 이벤트 리스너 연결
+    if (loginBtnPC) loginBtnPC.addEventListener('click', openLoginModal);
+    if (loginBtnMobile) loginBtnMobile.addEventListener('click', openLoginModal);
+    
+    // 닫기 버튼 & 배경 클릭 시 닫기
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeLoginModal);
+    if (loginBackdrop) loginBackdrop.addEventListener('click', closeLoginModal);
+    
+    // ESC 키 누르면 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && loginModal && !loginModal.classList.contains('hidden')) {
+            closeLoginModal();
+        }
+    });
+});
